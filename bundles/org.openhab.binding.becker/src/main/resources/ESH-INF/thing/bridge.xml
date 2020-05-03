@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="becker"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
+
+	<bridge-type id="bridge">
+		<label>Becker CentralControl</label>
+		<description>The Becker CentralControl (CC) is the bridge for the Becker SmartHome System.</description>
+		<channel-groups>
+			<channel-group id="notification" typeId="notification" />
+		</channel-groups>
+		<representation-property>serialNumber</representation-property>
+		<config-description-ref uri="thing-type:becker:bridge" />
+	</bridge-type>
+
+</thing:thing-descriptions>

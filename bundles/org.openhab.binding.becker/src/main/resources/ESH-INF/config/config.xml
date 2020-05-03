@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config-description:config-descriptions
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:config-description="http://eclipse.org/smarthome/schemas/config-description/v1.0.0"
+	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/config-description/v1.0.0
+        http://eclipse.org/smarthome/schemas/config-description-1.0.0.xsd">
+
+	<config-description uri="thing-type:becker:bridge">
+		<parameter-group name="connection">
+			<label>Connection settings</label>
+			<description>General connection settings for the Becker CentralControl.</description>
+		</parameter-group>
+		<parameter-group name="timeouts">
+			<label>Timeout and queue settings</label>
+			<description>Advanced timeout and queue settings for the Becker CentralControl.</description>
+			<advanced>true</advanced>
+		</parameter-group>
+		<parameter name="host" type="text" required="true" groupName="connection">
+			<label>Host</label>
+			<description>Network address or host name of the Becker CentralControl.</description>
+			<context>network-address</context>
+		</parameter>
+		<parameter name="port" type="integer" min="1" max="65335" groupName="connection">
+			<label>Port</label>
+			<description>Network port of the Becker CentralControl.</description>
+			<default>80</default>
+		</parameter>
+		<parameter name="connectionDelay" type="integer" min="0" max="120" groupName="timeouts">
+			<label>Connection delay</label>
+			<description>Time between binding initialization and first connection attempt (seconds, 0-120)</description>
+			<default>1</default>
+		</parameter>
+		<parameter name="connectionInterval" type="integer" min="0" max="600" groupName="timeouts">
+			<label>Connection interval</label>
+			<description>Time between failed connection attempts (seconds, 0-600)</description>
+			<default>30</default>
+		</parameter>
+		<parameter name="refreshInterval" type="integer" min="1" max="3600" groupName="timeouts">
+			<label>Refresh interval</label>
+			<description>Time between requests to refresh state from Becker CentralControl (seconds, 1-3600)</description>
+			<default>60</default>
+		</parameter>
+		<parameter name="idleTimeout" type="integer" min="1" max="3600" groupName="timeouts">
+			<label>Idle timeout</label>
+			<description>Time of inactivity before connection is closed (seconds, 1-3600)</description>
+			<default>3600</default>
+		</parameter>
+		<parameter name="queueCapacity" type="integer" min="1" max="100" groupName="timeouts">
+			<label>Queue capacity</label>
+			<description>Maximum number of concurrent requests (1-100)</description>
+			<default>50</default>
+		</parameter>
+		<parameter name="queueTimeout" type="integer" min="1" max="60" groupName="timeouts">
+			<label>Queue timeout</label>
+			<description>Time to wait for a response from Becker CentralControl (seconds, 1-60)</description>
+			<default>5</default>
+		</parameter>
+		<parameter name="queueTimeoutInterval" type="integer" min="1" max="1000" groupName="timeouts">
+			<label>Queue timeout interval</label>
+			<description>Time between checks for missing responses from Becker CentralControl (milliseconds, 1-1000)</description>
+			<default>100</default>
+		</parameter>
+	</config-description>
+
+	<config-description uri="thing-type:becker:device">
+		<parameter name="id" type="integer" required="true">
+			<label>ID</label>
+			<description>The number uniquely identifying this device.</description>
+		</parameter>
+	</config-description>
+
+</config-description:config-descriptions>
