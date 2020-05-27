@@ -297,7 +297,7 @@ public class PhilipsAirHandlerTest extends JavaTest {
         assertThat(stateCaptor.getAllValues().get(11), instanceOf(StringType.class)); // ddp
         assertThat(stateCaptor.getAllValues().get(12), instanceOf(StringType.class)); // err
         assertThat(stateCaptor.getAllValues().get(13), instanceOf(StringType.class)); // func
-        assertThat(stateCaptor.getAllValues().get(14), instanceOf(DecimalType.class)); // rhset
+        assertThat(stateCaptor.getAllValues().get(14), instanceOf(QuantityType.class)); // rhset
         assertThat(stateCaptor.getAllValues().get(15), instanceOf(QuantityType.class)); // rh
         assertThat(stateCaptor.getAllValues().get(16), instanceOf(QuantityType.class)); // temp
         assertThat(stateCaptor.getAllValues().get(17), instanceOf(DecimalType.class)); // wl
@@ -317,7 +317,7 @@ public class PhilipsAirHandlerTest extends JavaTest {
         StringType ddpState = (StringType) stateCaptor.getAllValues().get(11);
         StringType errState = (StringType) stateCaptor.getAllValues().get(12);
         StringType funcState = (StringType) stateCaptor.getAllValues().get(13);
-        DecimalType rhsetState = (DecimalType) stateCaptor.getAllValues().get(14);
+        QuantityType<Dimensionless> rhsetState = (QuantityType<Dimensionless>) stateCaptor.getAllValues().get(14);
         @SuppressWarnings("unchecked")
         QuantityType<Dimensionless> rhState = (QuantityType<Dimensionless>) stateCaptor.getAllValues().get(15);
         @SuppressWarnings("unchecked")

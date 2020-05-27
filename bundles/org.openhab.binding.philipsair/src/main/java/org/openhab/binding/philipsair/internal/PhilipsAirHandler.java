@@ -44,17 +44,12 @@ import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.measure.quantity.Dimensionless;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -78,6 +73,8 @@ import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.philipsair.internal.connection.PhilipsAirAPIConnection;
+import org.openhab.binding.philipsair.internal.connection.PhilipsAirAPIConnectionCoap;
+import org.openhab.binding.philipsair.internal.connection.PhilipsAirAPIConnectionHttp;
 import org.openhab.binding.philipsair.internal.connection.PhilipsAirAPIException;
 import org.openhab.binding.philipsair.internal.model.PhilipsAirPurifierDataDTO;
 import org.openhab.binding.philipsair.internal.model.PhilipsAirPurifierDeviceDTO;
@@ -91,10 +88,11 @@ import org.slf4j.LoggerFactory;
  * sent to one of the channels.
  *
  * @author Michal Boronski - Initial contribution
+ * @author Stefan Machura - Modifications for COAP
  */
 @NonNullByDefault
 public class PhilipsAirHandler extends BaseThingHandler {
-    private static final long INITIAL_DELAY_IN_SECONDS = 5;
+    private static final long INITIAL_DELAY_IN_SECONDS = 1;
     private final Logger logger = LoggerFactory.getLogger(PhilipsAirHandler.class);
     private @Nullable ScheduledFuture<?> refreshJob;
     private @Nullable PhilipsAirAPIConnection connection;
@@ -117,30 +115,34 @@ public class PhilipsAirHandler extends BaseThingHandler {
         if (command == RefreshType.REFRESH) {
             logger.debug("Refreshing {}", channelUID);
             updateData(connection);
+            updateChannels();
         } else {
             logger.debug("Sending {} as {}", channelUID.getId(), command.toString());
             PhilipsAirPurifierWritableDataDTO commandData = prepareCommandData(channelUID.getIdWithoutGroup(), command);
             try {
-                currentData = connection.sendCommand(channelUID.getIdWithoutGroup(), commandData);
-            } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException
-                    | UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException
-                    | InvalidAlgorithmParameterException e) {
+                @Nullable PhilipsAirPurifierDataDTO resultData = connection.sendCommand(channelUID.getIdWithoutGroup(), commandData);
+                if (resultData != null) {
+                    currentData = resultData;
+                    updateChannels();
+                }
+            } catch (GeneralSecurityException | UnsupportedEncodingException e) {
                 logger.debug("An exception occured", e);
             }
-
-            updateChannels();
         }
     }
 
     public PhilipsAirPurifierWritableDataDTO prepareCommandData(String parameter, Command command) {
         OnOffType onOffCommand = null;
         DecimalType decimalCommand = null;
+        QuantityType<?> quantityCommand = null;
         String stringCommand = null;
 
         if (command instanceof OnOffType) {
             onOffCommand = (OnOffType) command;
         } else if (command instanceof DecimalType) {
             decimalCommand = (DecimalType) command;
+        } else if (command instanceof QuantityType<?>) {
+            quantityCommand = (QuantityType<?>) command;
         } else if (command instanceof StringType) {
             stringCommand = command.toString();
         }
@@ -194,8 +196,8 @@ public class PhilipsAirHandler extends BaseThingHandler {
                 }
                 break;
             case HUMIDITY_SETPOINT:
-                if (decimalCommand != null) {
-                    data.setHumiditySetpoint(decimalCommand.intValue());
+                if (quantityCommand != null) {                   
+                    data.setHumiditySetpoint(quantityCommand.intValue());
                 }
                 break;
             case FUNCTION:
@@ -223,8 +225,14 @@ public class PhilipsAirHandler extends BaseThingHandler {
         if (callback != null) {
             callback.configurationUpdated(thing);
         }
-
-        connection = new PhilipsAirAPIConnection(config, httpClient);
+        if (config.getProtocol().equals("coap")) {
+            logger.debug("Connecting to device using COAP");
+            connection = new PhilipsAirAPIConnectionCoap(config);
+        }
+        else {
+            logger.debug("Connecting to device using HTTP");
+            connection = new PhilipsAirAPIConnectionHttp(config, httpClient);
+        }
         updateStatus(ThingStatus.UNKNOWN);
         if (this.refreshJob == null || this.refreshJob.isCancelled()) {
             logger.debug("Start refresh job at interval {} sec.", refreshInterval);
@@ -238,7 +246,9 @@ public class PhilipsAirHandler extends BaseThingHandler {
         if (refreshJob != null) {
             refreshJob.cancel(true);
         }
-
+        if (connection != null) {
+            connection.dispose();
+        }
         super.dispose();
     }
 
@@ -387,7 +397,7 @@ public class PhilipsAirHandler extends BaseThingHandler {
                     return new QuantityType<Dimensionless>(
                             data.getHumidity() + getAirPurifierConfig().getHumidityOffset(), HUMIDITY_UNIT);
                 case HUMIDITY_SETPOINT:
-                    return data.getHumiditySetpoint();
+                    return new QuantityType<Dimensionless>(data.getHumiditySetpoint(), HUMIDITY_UNIT);
                 case TEMPERATURE:
                     return new QuantityType<>(data.getTemperature() + getAirPurifierConfig().getTemperatureOffset(),
                             TEMPERATURE_UNIT);

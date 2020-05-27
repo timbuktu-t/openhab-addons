@@ -27,11 +27,13 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * configuration parameters.
  *
  * @author Michal Boronski - Initial contribution
+ * @author Stefan Machura - Modifications for COAP
  */
 @NonNullByDefault
 public class PhilipsAirConfiguration {
-
+    
     public static final String CONFIG_KEY = "key";
+    public static final String CONFIG_DEF_PROTOCOL = "protocol";
     public static final String CONFIG_DEF_DEVICE_UUID = "deviceUUID";
     public static final String CONFIG_DEF_REFRESH_INTERVAL = "refreshInterval";
     public static final String CONFIG_DEF_MODEL_ID = "modelid";
@@ -53,6 +55,7 @@ public class PhilipsAirConfiguration {
     private String host = "";
     private String deviceUUID = "";
     private String key = "";
+    private String protocol = "";
     private String modelid = "";
     private float temperatureOffset;
     private float humidityOffset;;
@@ -71,6 +74,9 @@ public class PhilipsAirConfiguration {
                         break;
                     case CONFIG_DEF_REFRESH_INTERVAL:
                         setRefreshInterval((Integer) e.getValue());
+                        break;
+                    case CONFIG_DEF_PROTOCOL:
+                        setProtocol((String) e.getValue());
                         break;
                     case CONFIG_DEF_DEVICE_UUID:
                         setDeviceUUID((String) e.getValue());
@@ -119,6 +125,14 @@ public class PhilipsAirConfiguration {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
     public String getDeviceUUID() {

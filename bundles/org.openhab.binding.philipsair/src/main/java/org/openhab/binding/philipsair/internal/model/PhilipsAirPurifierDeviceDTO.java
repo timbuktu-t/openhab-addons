@@ -19,6 +19,7 @@ import com.google.gson.annotations.SerializedName;
  * Contains info details of the Air Purifier thing
  *
  * @author Michał Boroński - Initial contribution
+ * @author Stefan Machura - Modifications for COAP
  *
  */
 public class PhilipsAirPurifierDeviceDTO {
@@ -32,6 +33,9 @@ public class PhilipsAirPurifierDeviceDTO {
     @SerializedName("modelid")
     @Expose
     private String modelId;
+    @SerializedName("DeviceId")
+    @Expose
+    private String deviceId;
     @SerializedName("swversion")
     @Expose
     private String softwareVersion;
@@ -58,6 +62,14 @@ public class PhilipsAirPurifierDeviceDTO {
 
     public void setModelId(String modelId) {
         this.modelId = modelId;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public String getSoftwareVersion() {
