@@ -55,9 +55,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 
-// TODO test automatic reconnection by unplugging air purifier
-// TODO must manually run "feature:install openhab-transport-coap"
-
 @NonNullByDefault
 public class PhilipsAirAPIConnectionCoap implements PhilipsAirAPIConnection {
     private static final Logger logger = LoggerFactory.getLogger(PhilipsAirAPIConnectionCoap.class);
@@ -117,7 +114,7 @@ public class PhilipsAirAPIConnectionCoap implements PhilipsAirAPIConnection {
             throws JsonSyntaxException, PhilipsAirAPIException {
         @Nullable PhilipsAirPurifierDeviceDTO dto = gson.fromJson(getObservation(), PhilipsAirPurifierDeviceDTO.class);
         if (dto.getDeviceId() != null && !dto.getDeviceId().equals(config.getDeviceUUID())) {
-            logger.info("Setting deviceUUID to {}", dto.getDeviceId());
+            logger.debug("Setting deviceUUID to {}", dto.getDeviceId());
             config.setDeviceUUID(dto.getDeviceId());
         }
         return dto;
@@ -132,10 +129,9 @@ public class PhilipsAirAPIConnectionCoap implements PhilipsAirAPIConnection {
     private synchronized @Nullable JsonElement getObservation() throws PhilipsAirAPIException {
         try {
             if (observation == null || System.currentTimeMillis() - observationTime >= OBSERVATION_TIMEOUT_MS) {
-                // TODO yuck!
                 if (!observationRestarting) {
                     try {
-                        logger.warn("Restarting observation as cached data is stale");
+                        logger.debug("Restarting observation as cached data is stale");
                         observationRestarting = true;
                         reset();
                         sync();
@@ -286,8 +282,6 @@ public class PhilipsAirAPIConnectionCoap implements PhilipsAirAPIConnection {
             throw new PhilipsAirAPIException(e.getLocalizedMessage(), e);
         }
     }
-
-    // TODO merge the following methods with PhilipsAirCipher
 
     private static final String encrypt(final String key, final String data) 
             throws GeneralSecurityException, UnsupportedEncodingException {

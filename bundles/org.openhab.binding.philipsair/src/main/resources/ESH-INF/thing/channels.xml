@@ -86,7 +86,7 @@
 		<item-type>Number:Density</item-type>
 		<label>PM2.5</label>
 		<description>PM 2.5 particles pollution level</description>
-		<state readOnly="true" pattern="%d" min="0" max="5000" />
+		<state readOnly="true" pattern="%.0f %unit%" />
 	</channel-type>
 	<channel-type id="iaql">
 		<item-type>Number</item-type>
