@@ -89,7 +89,7 @@ philipsair:ac2889_10:123 "Philips Air AC2889_10" @ "Wroclaw" [ key="XXXXXXXXXXXX
 | dtrs       | Number               | Timer minutes lefts                                                                 |
 | dt         | Number               | Timer in hours (0-5)                                                                |
 | cl         | Switch               | Child lock enabled/disabled                                                         |
-| pm25       | Number:Density       | PM 2.5 particles pollution level                                                    |
+| pm25       | Number               | PM 2.5 particles pollution level                                                    |
 | iaql       | Number               | Allergen index                                                                      |
 | aqit       | Number               | Air quality notification threshold                                                  |
 | err        | String               | Error message code                                                                  |
@@ -117,7 +117,7 @@ String                ac2889_10_ddp      "Displayed index"    <text>         { c
 Number                ac2889_10_aqil     "LED light level"    <lightbulb>    { channel="philipsair:ac2889_10:livingroom:controls-ui#aqil" }
 Number                ac2889_10_dtrs     "Timer left"         <time>         { channel="philipsair:ac2889_10:livingroom:controls-basic#dtrs" }
 Number                ac2889_10_dt       "Timer"              <time>         { channel="philipsair:ac2889_10:livingroom:controls-basic#dt" }
-Number:Density        ac2889_10_pm25     "PM2.5"              <smoke>        { channel="philipsair:ac2889_10:livingroom:sensors-basic#pm25" }
+Number                ac2889_10_pm25     "PM2.5"              <smoke>        { channel="philipsair:ac2889_10:livingroom:sensors-basic#pm25" }
 Number                ac2889_10_iaql     "Allergen index"     <text>         { channel="philipsair:ac2889_10:livingroom:sensors-basic#iaql" }
 Number                ac2889_10_aqit     "AQIT"               <text>         { channel="philipsair:ac2889_10:livingroom:sensors-basic#aqit" }
 String                ac2889_10_err      "Error message"      <error>        { channel="philipsair:ac2889_10:livingroom:sensors-basic#err" }

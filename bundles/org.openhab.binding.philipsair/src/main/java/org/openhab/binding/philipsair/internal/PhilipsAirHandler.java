@@ -21,7 +21,6 @@ import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants
 import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.BUTTONS_LIGHT;
 import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.CARBON_FILTER;
 import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.CHILD_LOCK;
-import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.DENSITY_UNIT;
 import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.DISPLAYED_INDEX;
 import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.ERROR_CODE;
 import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.FAN_MODE;
@@ -55,7 +54,6 @@ import javax.measure.quantity.Dimensionless;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.smarthome.core.library.dimension.Density;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.QuantityType;
@@ -376,7 +374,7 @@ public class PhilipsAirHandler extends BaseThingHandler {
                 case POWER:
                     return data.getPower().equals("0") ? OnOffType.OFF : OnOffType.ON;
                 case PM25:
-                    return new QuantityType<Density>(data.getPm25(), DENSITY_UNIT);
+                    return data.getPm25();
                 case FAN_MODE:
                     return data.getFanSpeed();
                 case CHILD_LOCK:

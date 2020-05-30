@@ -39,12 +39,13 @@ import java.util.concurrent.TimeoutException;
 import javax.measure.quantity.Dimensionless;
 import javax.measure.quantity.Temperature;
 
+import com.google.gson.Gson;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.smarthome.config.core.Configuration;
-import org.eclipse.smarthome.core.library.dimension.Density;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.QuantityType;
@@ -67,8 +68,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.openhab.binding.philipsair.internal.connection.PhilipsAirCipher;
 import org.openhab.binding.philipsair.internal.model.PhilipsAirPurifierWritableDataDTO;
-
-import com.google.gson.Gson;
 
 /**
  * Test cases for {@link PhilipsAirHandler}. The tests provide mocks for
@@ -282,7 +281,7 @@ public class PhilipsAirHandlerTest extends JavaTest {
 
         int calls = stateCaptor.getAllValues().size();
         assertThat(calls, is(18));
-        assertThat(stateCaptor.getAllValues().get(0), instanceOf(QuantityType.class));
+        assertThat(stateCaptor.getAllValues().get(0), instanceOf(DecimalType.class));
         assertThat(stateCaptor.getAllValues().get(1), instanceOf(OnOffType.class));
         assertThat(stateCaptor.getAllValues().get(2), instanceOf(StringType.class));
         assertThat(stateCaptor.getAllValues().get(3), instanceOf(OnOffType.class)); // cl
@@ -302,7 +301,7 @@ public class PhilipsAirHandlerTest extends JavaTest {
         assertThat(stateCaptor.getAllValues().get(16), instanceOf(QuantityType.class)); // temp
         assertThat(stateCaptor.getAllValues().get(17), instanceOf(DecimalType.class)); // wl
 
-        QuantityType<Density> pm25State = (QuantityType<Density>) stateCaptor.getAllValues().get(0);
+        DecimalType pm25State = (DecimalType) stateCaptor.getAllValues().get(0);
         OnOffType pwrState = (OnOffType) stateCaptor.getAllValues().get(1);
         StringType omState = (StringType) stateCaptor.getAllValues().get(2);
         OnOffType clState = (OnOffType) stateCaptor.getAllValues().get(3);

@@ -83,10 +83,10 @@
 	</channel-type>
 
 	<channel-type id="pm25">
-		<item-type>Number:Density</item-type>
+		<item-type>Number</item-type>
 		<label>PM2.5</label>
 		<description>PM 2.5 particles pollution level</description>
-		<state readOnly="true" pattern="%.0f %unit%" />
+		<state readOnly="true" pattern="%d" />
 	</channel-type>
 	<channel-type id="iaql">
 		<item-type>Number</item-type>
