@@ -31,6 +31,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Stefan Machura - Initial contribution
  */
+
+// TODO (3) add JavaDoc and package-info
+
 @NonNullByDefault
 public class BeckerHandler extends BaseThingHandler {
 

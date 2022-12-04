@@ -15,17 +15,22 @@ package org.openhab.binding.becker.internal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link BeckerConfiguration} class contains fields mapping thing configuration parameters.
+ * The {@link BeckerConfiguration} class contains fields mapping thing
+ * configuration parameters.
  *
  * @author Stefan Machura - Initial contribution
  */
+
+// TODO (3) add JavaDoc and package-info
+
 @NonNullByDefault
 public class BeckerConfiguration {
 
     /**
      * Sample configuration parameters. Replace with your own.
      */
-    public String hostname = "";
-    public String password = "";
-    public int refreshInterval = 600;
+    public String host = "";
+    public int port = 80;
+    public int requestTimeout = 5;
+    public int idleTimeout = 3600;
 }

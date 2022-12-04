@@ -31,6 +31,9 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Stefan Machura - Initial contribution
  */
+
+// TODO (3) add JavaDoc and package-info
+
 @NonNullByDefault
 @Component(configurationPid = "binding.becker", service = ThingHandlerFactory.class)
 public class BeckerHandlerFactory extends BaseThingHandlerFactory {
