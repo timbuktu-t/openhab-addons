@@ -1,11 +1,14 @@
 package org.openhab.binding.becker.internal.socket;
 
+import static org.eclipse.jdt.annotation.Checks.applyIfNonNull;
+import static org.eclipse.jdt.annotation.Checks.ifNonNull;
+import static org.eclipse.jdt.annotation.Checks.requireNonNull;
 import static org.openhab.binding.becker.internal.BeckerBindingConstants.JSONRPC_VERSION;
 import static org.openhab.binding.becker.internal.BeckerBindingConstants.TRANSPORT_ENCODING;
 import static org.openhab.binding.becker.internal.BeckerBindingConstants.TRANSPORT_ORIGIN;
-import static org.openhab.binding.becker.internal.BeckerNullables.nonNull;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
@@ -26,6 +29,7 @@ import org.openhab.binding.becker.internal.handler.BeckerBridgeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -42,111 +46,116 @@ import com.google.gson.JsonSyntaxException;
 // @author Paul Frank - This class is in parts derived from the kodi binding
 
 @NonNullByDefault
-public final class BeckerSocket {
+public final class BeckerSocket implements AutoCloseable {
 
-    private final Logger logger = LoggerFactory.getLogger(BeckerSocket.class);
+    private final @NonNullByDefault({}) Logger logger = LoggerFactory.getLogger(BeckerSocket.class);
+    private final Gson gson = new Gson();
 
-    private final BeckerBridgeHandler bridgeHandler;
+    private final BeckerBridgeHandler bridge;
 
-    private @Nullable Future<Session> sessionFuture = null;
-    private @Nullable Session session;
+    private @Nullable Future<?> sessionFuture = null;
+    private @Nullable Session session = null;
     private @Nullable JsonObject response = null;
     private CountDownLatch responseLatch = new CountDownLatch(1);;
     private long lastMessageId = -1;
 
-    public BeckerSocket(BeckerBridgeHandler bridgeHandler) {
-        this.bridgeHandler = bridgeHandler;
-    }
-
-    public synchronized void initialize() {
-    }
-
-    public synchronized void dispose() {
-        disconnect();
+    public BeckerSocket(BeckerBridgeHandler bridge) {
+        this.bridge = bridge;
     }
 
     public synchronized void connect() {
-
-        if (sessionFuture != null || session != null) {
-            logger.debug("Attempt to connect while connected or connecting");
+        if (session != null || sessionFuture != null) {
+            logger.debug("Attempt to connect while connected, connecting or disconnecting");
             return;
         }
 
         try {
-            URI uri = new URI("ws", null, bridgeHandler.config().host, bridgeHandler.config().port, "/jrpc", null,
-                    null);
+            URI uri = new URI(String.format("ws://%s:%d/jrpc", bridge.config().host, bridge.config().port));
             logger.debug("Connecting to {}", uri);
             ClientUpgradeRequest request = new ClientUpgradeRequest();
             request.setHeader("Origin", TRANSPORT_ORIGIN);
             request.setSubProtocols("binary");
-            sessionFuture = bridgeHandler.webSocketClient().connect(new Socket(), uri, request);
+            sessionFuture = bridge.webSocketClient().connect(new Socket(), uri, request);
         } catch (IOException | URISyntaxException e) {
             logger.debug("Connection failed due to {}", e, e);
-            disconnect();
+            close(e);
         }
     }
 
-    public synchronized void disconnect() {
+    @Override
+    public void close() {
+        close(null);
+    }
 
-        if (session != null) {
+    // no throwable disconnected explicitly to avoid reconnection attempts
+
+    private synchronized void close(@Nullable Throwable t) {
+        logger.debug(t == null ? "Disconnecting" : "Disconnecting due to {}", t);
+
+        ifNonNull(session, s -> {
             logger.debug("Closing session");
-            nonNull(session).close();
+            s.close();
             session = null;
-            bridgeHandler.onDisconnect();
-        }
+            bridge.onDisconnect(t);
+        });
 
-        if (sessionFuture != null && !nonNull(sessionFuture).isDone()) {
-            logger.debug("Cancelling connection attempt");
-            nonNull(sessionFuture).cancel(true);
-            sessionFuture = null;
-            bridgeHandler.onDisconnect();
-        }
+        ifNonNull(sessionFuture, f -> {
+            if (!f.isDone()) {
+                logger.debug("Cancelling connection attempt");
+                f.cancel(true);
+                sessionFuture = null;
+                bridge.onDisconnect(t);
+            }
+        });
     }
 
-    // return result on success or null on failure
+    // return received result on success or null on missing result and failure
 
-    public synchronized @Nullable JsonElement send(String method, JsonObject params) {
-        if (session == null) {
-            logger.debug("Attempt to send method '{}' while disconnected or connecting", method);
-            return null;
-        }
-
+    public synchronized <R extends BeckerCommand.Result> @Nullable R send(BeckerCommand<R> command) {
         try {
-            logger.debug("Sending method '{}'", method);
+            if (session == null) {
+                logger.debug("Attempt to send {} while disconnected", command);
+                return null;
+            }
+
+            logger.debug("Sending command {}", command);
             JsonObject json = new JsonObject();
             json.addProperty("jsonrpc", JSONRPC_VERSION);
-            json.addProperty("method", method);
+            json.addProperty("method", command.method);
             json.addProperty("id", ++lastMessageId);
-            if (params != null) {
+            JsonElement params = gson.toJsonTree(command);
+            if (params.getAsJsonObject().size() > 0) {
                 json.add("params", params);
             }
-            String message = json.toString();
 
-            logger.debug("Sending message '{}'", message);
+            logger.trace("Sending message '{}'", json);
             response = null;
             responseLatch = new CountDownLatch(1);
-            nonNull(session).getRemote().sendBytes(TRANSPORT_ENCODING.encode(message + "\0"));
-
-            logger.debug("Waiting for response");
-            if (responseLatch.await(bridgeHandler.config().requestTimeout, TimeUnit.SECONDS)) {
-                logger.debug("Receiving response '{}'", response);
-                if (response != null && nonNull(response).has("result")) {
-                    return nonNull(response).get("result");
-                }
-                return null;
+            requireNonNull(session).getRemote().sendBytes(TRANSPORT_ENCODING.encode(json + "\0"));
+            logger.trace("Waiting for response");
+            if (responseLatch.await(bridge.config().requestTimeout, TimeUnit.SECONDS)) {
+                @Nullable
+                R result = applyIfNonNull(requireNonNull(response).get("result"),
+                        r -> gson.fromJson(r, command.resultType));
+                logger.debug("Completing command {} with {}", command, result);
+                return result;
             } else {
                 logger.debug("Timeout waiting for response");
                 return null;
             }
         } catch (IOException | InterruptedException e) {
             logger.debug("Sending failed due to {}", e, e);
-            disconnect();
+            close(e);
+            return null;
+        } catch (ClassCastException | JsonSyntaxException e) {
+            logger.warn("Received invalid message {}", response, e);
             return null;
         }
     }
 
     private void receive(String message) {
-        logger.debug("Receiving message {}", message);
+        logger.trace("Receiving message {}", message);
+
         try {
             JsonObject json = JsonParser.parseString(message).getAsJsonObject();
             if (json.has("id")) {
@@ -183,17 +192,18 @@ public final class BeckerSocket {
             }
 
             logger.debug("Connected");
-            session.setIdleTimeout(bridgeHandler.config().idleTimeout * 1000L);
+            session.setIdleTimeout(bridge.config().idleTimeout * 1000L);
             BeckerSocket.this.session = session;
             BeckerSocket.this.sessionFuture = null;
-            bridgeHandler.scheduler().submit(() -> bridgeHandler.onConnect());
+            bridge.scheduler().submit(() -> bridge.onConnect());
         }
 
         @OnWebSocketClose
         public void onClose(Session session, int code, @Nullable String message) {
             if (Objects.equals(BeckerSocket.this.session, session)) {
-                logger.debug("Connection closed with code {} and reason '{}'", code, message);
-                bridgeHandler.scheduler().submit(() -> disconnect());
+                final String cause = String.format("Connection closed with code %d and reason '%s'", code, message);
+                logger.debug(cause);
+                bridge.scheduler().submit(() -> close(new SocketException(cause)));
             }
         }
 
@@ -201,7 +211,7 @@ public final class BeckerSocket {
         public void onError(@Nullable Session session, Throwable t) {
             if (Objects.equals(BeckerSocket.this.session, session)) {
                 logger.debug("Communication failed due to {}", t, t);
-                bridgeHandler.scheduler().submit(() -> disconnect());
+                bridge.scheduler().submit(() -> close(t));
             }
         }
 
@@ -211,7 +221,7 @@ public final class BeckerSocket {
             if (Objects.equals(BeckerSocket.this.session, session)) {
                 for (String part : message.split("\0")) {
                     if (part != null) {
-                        bridgeHandler.scheduler().submit(() -> receive(part));
+                        bridge.scheduler().submit(() -> receive(part));
                     }
                 }
             }

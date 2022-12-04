@@ -35,9 +35,9 @@ import org.slf4j.LoggerFactory;
 // TODO (3) add JavaDoc and package-info
 
 @NonNullByDefault
-public class BeckerHandler extends BaseThingHandler {
+public final class BeckerHandler extends BaseThingHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(BeckerHandler.class);
+    private final @NonNullByDefault({}) Logger logger = LoggerFactory.getLogger(BeckerHandler.class);
 
     private @Nullable BeckerConfiguration config;
 

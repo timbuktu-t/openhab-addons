@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.becker.internal;
 
-import static org.openhab.binding.becker.internal.BeckerNullables.nonNull;
+import static org.eclipse.jdt.annotation.Checks.requireNonNull;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +30,7 @@ import org.openhab.core.thing.ThingTypeUID;
 // TODO (3) add JavaDoc and package-info
 
 @NonNullByDefault
-public class BeckerBindingConstants {
+public final class BeckerBindingConstants {
 
     private static final String BINDING_ID = "becker";
 
@@ -40,11 +40,14 @@ public class BeckerBindingConstants {
     // List of all Channel ids
     public static final String CHANNEL_1 = "channel1";
 
-    // Pattern to use when creating URI from host and port.
+    // Text representing a null value
+    public static final String NULL = "none";
+
+    // Pattern to use when creating URI from host and port
     public static final String TRANSPORT_URI_PATTERN = "ws://%s:%d/jrpc";
 
     // Transport encoding to use for binary conversion
-    public static final Charset TRANSPORT_ENCODING = nonNull(StandardCharsets.UTF_8);
+    public static final Charset TRANSPORT_ENCODING = requireNonNull(StandardCharsets.UTF_8);
 
     // TODO (2) automatically determine origin using network service
     // Dummy origin to send when connecting to the server

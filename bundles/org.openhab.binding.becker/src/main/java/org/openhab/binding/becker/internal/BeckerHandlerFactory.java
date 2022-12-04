@@ -36,7 +36,7 @@ import org.osgi.service.component.annotations.Component;
 
 @NonNullByDefault
 @Component(configurationPid = "binding.becker", service = ThingHandlerFactory.class)
-public class BeckerHandlerFactory extends BaseThingHandlerFactory {
+public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_SAMPLE);
 

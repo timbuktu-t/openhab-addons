@@ -3,6 +3,7 @@ package org.openhab.binding.becker.internal.handler;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.openhab.binding.becker.internal.BeckerConfiguration;
 
@@ -12,7 +13,7 @@ import org.openhab.binding.becker.internal.BeckerConfiguration;
 public interface BeckerBridgeHandler {
     
     void onConnect();
-    void onDisconnect();
+    void onDisconnect(@Nullable Throwable t);
     BeckerConfiguration config();
     ScheduledExecutorService scheduler();
     WebSocketClient webSocketClient();

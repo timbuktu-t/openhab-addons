@@ -24,7 +24,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 // TODO (3) add JavaDoc and package-info
 
 @NonNullByDefault
-public class BeckerConfiguration {
+public final class BeckerConfiguration {
 
     /**
      * Sample configuration parameters. Replace with your own.
