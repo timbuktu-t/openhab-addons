@@ -4,7 +4,6 @@ import static org.eclipse.jdt.annotation.Checks.requireNonNull;
 import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 // non-transient members are serialized as parameters
 

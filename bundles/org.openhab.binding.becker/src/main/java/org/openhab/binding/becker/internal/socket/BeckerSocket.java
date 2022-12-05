@@ -1,6 +1,7 @@
 package org.openhab.binding.becker.internal.socket;
 
 import static org.eclipse.jdt.annotation.Checks.applyIfNonNull;
+import static org.eclipse.jdt.annotation.Checks.applyIfNonNullElseGet;
 import static org.eclipse.jdt.annotation.Checks.ifNonNull;
 import static org.eclipse.jdt.annotation.Checks.requireNonNull;
 import static org.openhab.binding.becker.internal.BeckerBindingConstants.JSONRPC_VERSION;
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jetty.websocket.api.CloseException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -61,6 +63,7 @@ public final class BeckerSocket implements AutoCloseable {
 
     public BeckerSocket(BeckerBridgeHandler bridge) {
         this.bridge = bridge;
+        this.bridge.webSocketClient().setConnectTimeout(bridge.config().connectTimeout * 1000L);
     }
 
     public synchronized void connect() {
@@ -87,70 +90,72 @@ public final class BeckerSocket implements AutoCloseable {
         close(null);
     }
 
-    // no throwable disconnected explicitly to avoid reconnection attempts
+    // no throwable when disconnected by client
 
-    private synchronized void close(@Nullable Throwable t) {
-        logger.debug(t == null ? "Disconnecting" : "Disconnecting due to {}", t);
+    private void close(@Nullable Throwable t) {
+        logger.debug(t == null ? "Disconnecting" : "Disconnecting due to {}", t, t);
 
         ifNonNull(session, s -> {
             logger.debug("Closing session");
-            s.close();
             session = null;
-            bridge.onDisconnect(t);
+            s.close();
         });
 
         ifNonNull(sessionFuture, f -> {
+            sessionFuture = null;
             if (!f.isDone()) {
                 logger.debug("Cancelling connection attempt");
                 f.cancel(true);
-                sessionFuture = null;
-                bridge.onDisconnect(t);
             }
         });
+
+        bridge.onDisconnect(t);
     }
 
     // return received result on success or null on missing result and failure
 
     public synchronized <R extends BeckerCommand.Result> @Nullable R send(BeckerCommand<R> command) {
-        try {
-            if (session == null) {
-                logger.debug("Attempt to send {} while disconnected", command);
-                return null;
-            }
+        logger.debug("Sending command {}", command);
 
-            logger.debug("Sending command {}", command);
-            JsonObject json = new JsonObject();
-            json.addProperty("jsonrpc", JSONRPC_VERSION);
-            json.addProperty("method", command.method);
-            json.addProperty("id", ++lastMessageId);
-            JsonElement params = gson.toJsonTree(command);
-            if (params.getAsJsonObject().size() > 0) {
-                json.add("params", params);
-            }
-
-            logger.trace("Sending message '{}'", json);
-            response = null;
-            responseLatch = new CountDownLatch(1);
-            requireNonNull(session).getRemote().sendBytes(TRANSPORT_ENCODING.encode(json + "\0"));
-            logger.trace("Waiting for response");
-            if (responseLatch.await(bridge.config().requestTimeout, TimeUnit.SECONDS)) {
-                @Nullable
-                R result = applyIfNonNull(requireNonNull(response).get("result"),
-                        r -> gson.fromJson(r, command.resultType));
-                logger.debug("Completing command {} with {}", command, result);
-                return result;
-            } else {
-                logger.debug("Timeout waiting for response");
-                return null;
-            }
-        } catch (IOException | InterruptedException e) {
-            logger.debug("Sending failed due to {}", e, e);
-            close(e);
-            return null;
-        } catch (ClassCastException | JsonSyntaxException e) {
-            logger.warn("Received invalid message {}", response, e);
-            return null;
+        JsonObject json = new JsonObject();
+        json.addProperty("jsonrpc", JSONRPC_VERSION);
+        json.addProperty("method", command.method);
+        json.addProperty("id", ++lastMessageId);
+        JsonElement params = gson.toJsonTree(command);
+        if (params.getAsJsonObject().size() > 0) {
+            json.add("params", params);
         }
+
+        logger.trace("Sending message '{}'", json);
+        response = null;
+        responseLatch = new CountDownLatch(1);
+
+        return applyIfNonNullElseGet(session, s -> {
+            try {
+                s.getRemote().sendBytes(TRANSPORT_ENCODING.encode(json + "\0"));
+                logger.trace("Waiting for response");
+                if (responseLatch.await(bridge.config().requestTimeout, TimeUnit.SECONDS)) {
+                    @Nullable
+                    R result = applyIfNonNull(requireNonNull(response).get("result"),
+                            r -> gson.fromJson(r, command.resultType));
+                    logger.debug("Completing command {} with {}", command, result);
+                    return result;
+                } else {
+                    logger.debug("Timeout waiting for response");
+                    return null;
+                }
+            } catch (IOException | InterruptedException e) {
+                logger.debug("Sending failed due to {}", e, e);
+                close(e);
+                return null;
+            } catch (ClassCastException | JsonSyntaxException e) {
+                logger.warn("Received invalid message {}", response, e);
+                return null;
+            }
+        }, () -> {
+            logger.debug("Attempt to send {} while disconnected", command);
+            return null;
+        });
     }
 
     private void receive(String message) {
@@ -198,11 +203,13 @@ public final class BeckerSocket implements AutoCloseable {
             bridge.scheduler().submit(() -> bridge.onConnect());
         }
 
+        // this method is only called when closed by remote
+
         @OnWebSocketClose
         public void onClose(Session session, int code, @Nullable String message) {
             if (Objects.equals(BeckerSocket.this.session, session)) {
-                final String cause = String.format("Connection closed with code %d and reason '%s'", code, message);
-                logger.debug(cause);
+                final String cause = new StringBuilder().append(code).append(" ").append(message).toString();
+                logger.debug("Connection closed with '{}'", cause);
                 bridge.scheduler().submit(() -> close(new SocketException(cause)));
             }
         }
@@ -211,7 +218,10 @@ public final class BeckerSocket implements AutoCloseable {
         public void onError(@Nullable Session session, Throwable t) {
             if (Objects.equals(BeckerSocket.this.session, session)) {
                 logger.debug("Communication failed due to {}", t, t);
-                bridge.scheduler().submit(() -> close(t));
+                // do not close explicitly if websocket is already closing or closed
+                if (!(t instanceof CloseException)) {
+                    bridge.scheduler().submit(() -> close(t));
+                }
             }
         }
 

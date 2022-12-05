@@ -59,7 +59,7 @@ public final class BeckerSocketTest {
 
         requireNonNull(doAnswer(iom -> {
             if (iom.getArgument(0) != null) {
-                System.err.format("Disconnected due to %s", iom.getArgument(0).toString());
+                System.out.format("Disconnected due to %s", iom.getArgument(0).toString());
             } else {
                 System.out.println("Disconnected");
             }
@@ -91,33 +91,8 @@ public final class BeckerSocketTest {
                 System.out.println("Hardware Variant: "
                         + applyIfNonNullElse(socket.send(new ReadHardwareVariantCommand()), r -> r.variant, NULL));
                 System.out.println("Firmware Version: "
-                        + applyIfNonNullElse(socket.send(new ReadFirmwareVersionCommand()), r -> r.toString(), NULL));
+                        + applyIfNonNullElse(socket.send(new ReadFirmwareVersionCommand()), r -> r.version(), NULL));
             }
-
-            /*
-             * if (connection.register("openhab_" + System.currentTimeMillis())) {
-             * System.out.println("Registered");
-             * }
-             * 
-             * System.out.format("Firmware version is '%s'",
-             * connection.readFirmwareVersion());
-             */
-
-            /*
-             * params = new JsonObject();
-             * params.addProperty("list_type", "receivers");
-             * response = connection.send("deviced.deviced_get_item_list", params);
-             * 
-             * System.out.println("deviced_get_item_list (receivers):");
-             * System.out.println(response);
-             * 
-             * params = new JsonObject();
-             * params.addProperty("list_type", "groups");
-             * response = connection.send("deviced.deviced_get_item_list", params);
-             * 
-             * System.out.println("deviced_get_item_list (groups):");
-             * System.out.println(response);
-             */
         }
     }
 }

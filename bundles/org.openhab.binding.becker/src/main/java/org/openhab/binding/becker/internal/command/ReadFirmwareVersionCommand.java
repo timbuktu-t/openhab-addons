@@ -1,8 +1,6 @@
 package org.openhab.binding.becker.internal.command;
 
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import static org.eclipse.jdt.annotation.Checks.requireNonNull;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -24,10 +22,13 @@ public final class ReadFirmwareVersionCommand extends BeckerCommand<ReadFirmware
         public @Nullable String rcode;
         public @Nullable String rdate;
 
+        public String version() {
+            return requireNonNull(new StringBuilder().append(rcode).append("-").append(rdate).toString());
+        }
+
         @Override
-        @SuppressWarnings("null")
         public String toString() {
-            return Stream.of(rcode, rdate).filter(Objects::nonNull).collect(Collectors.joining(" "));
+            return version();
         }
     }
 }
