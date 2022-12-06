@@ -1,6 +1,5 @@
 package org.openhab.binding.becker.internal.socket;
 
-import static org.eclipse.jdt.annotation.Checks.requireNonNull;
 import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -10,7 +9,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @NonNullByDefault
 public abstract class BeckerCommand<R extends BeckerCommand.Result> {
 
-    transient final String method;
+    transient protected final String method;
     transient final Class<R> resultType;
 
     protected BeckerCommand(String method, Class<R> resultType) {
@@ -22,7 +21,7 @@ public abstract class BeckerCommand<R extends BeckerCommand.Result> {
 
     @Override
     public String toString() {
-        return requireNonNull(String.format("%s", method));
+        return method;
     }
 
     // non-transient members are deserialized from result in JSON-RPC response

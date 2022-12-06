@@ -20,16 +20,12 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  *
  * @author Stefan Machura - Initial contribution
  */
-
-// TODO (3) add JavaDoc and package-info
-// idle timeout should be higher than request timeout
-
 @NonNullByDefault
 public final class BeckerConfiguration {
 
     public String host = "";
     public int port = 80;
-    public int connectTimeout = 5;
+    public int connectionTimeout = 5;
     public int requestTimeout = 10;
     public int idleTimeout = 15;
 }

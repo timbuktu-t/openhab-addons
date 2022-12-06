@@ -1,30 +1,30 @@
 package org.openhab.binding.becker.internal.command;
 
-import static org.eclipse.jdt.annotation.Checks.nonNullElse;
 import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.becker.internal.socket.BeckerCommand;
 
-// TODO (3) add JavaDoc and package-info
+import com.google.gson.annotations.SerializedName;
 
 @NonNullByDefault
-public final class ReadHardwareVariantCommand extends BeckerCommand<ReadHardwareVariantCommand.Result> {
+public final class ReadDeviceInfo extends BeckerCommand<ReadDeviceInfo.Result> {
 
-    private static final String METHOD = "systemd.info_hw_variant_read";
+    private static final String METHOD = "deviced.deviced_get_info";
 
-    public ReadHardwareVariantCommand() {
+    public ReadDeviceInfo() {
         super(METHOD, Result.class);
     }
 
     public static final class Result extends BeckerCommand.Result {
 
-        public @Nullable String variant;
+        public String name = NULL;
+        @SerializedName("auto_roof_window_time")
+        public Integer autoRoofWindowTime = 3;
 
         @Override
         public String toString() {
-            return nonNullElse(variant, NULL);
+            return name;
         }
     }
 }

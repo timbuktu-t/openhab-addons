@@ -12,10 +12,9 @@
  */
 package org.openhab.binding.becker.internal;
 
-import static org.eclipse.jdt.annotation.Checks.requireNonNull;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.ThingTypeUID;
@@ -27,27 +26,39 @@ import org.openhab.core.thing.ThingTypeUID;
  * @author Stefan Machura - Initial contribution
  */
 
-// TODO (3) add JavaDoc and package-info
-
 @NonNullByDefault
 public final class BeckerBindingConstants {
 
-    private static final String BINDING_ID = "becker";
+    // ID of this binding.
+    public static final String BINDING_ID = "becker";
 
-    // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_SAMPLE = new ThingTypeUID(BINDING_ID, "sample");
+    // List of all thing type UIDs
+    public static final ThingTypeUID THING_TYPE_BRIDGE = new ThingTypeUID(BINDING_ID, "bridge");
+    public static final ThingTypeUID THING_TYPE_ROOF_WINDOW = new ThingTypeUID(BINDING_ID, "roof-window");
+    public static final ThingTypeUID THING_TYPE_VENETIAN = new ThingTypeUID(BINDING_ID, "venetian");
+    public static final ThingTypeUID THING_TYPE_SHUTTER = new ThingTypeUID(BINDING_ID, "shutter");
 
-    // List of all Channel ids
-    public static final String CHANNEL_1 = "channel1";
+    // List of all device type UIDs i.e. excluding the bridge.
+    public static final Set<ThingTypeUID> SUPPORTED_DEVICE_TYPES = Set.of(THING_TYPE_ROOF_WINDOW, THING_TYPE_VENETIAN,
+            THING_TYPE_SHUTTER);
 
-    // Text representing a null value
-    public static final String NULL = "none";
+    // List of all supported hardware variants
+    public static final Set<String> SUPPORTED_HARDWARE_VARIANTS = Set.of("cc41");
+
+    // List of property names.
+    public static final String PROPERTY_ID = "id";
+
+    // Text representing a null value.
+    public static final String NULL = "<none>";
+
+    // Timeout in seconds to stop forced discovery process
+    public static final int DISCOVERY_TIMEOUT_SECONDS = 5;
 
     // Pattern to use when creating URI from host and port
     public static final String TRANSPORT_URI_PATTERN = "ws://%s:%d/jrpc";
 
     // Transport encoding to use for binary conversion
-    public static final Charset TRANSPORT_ENCODING = requireNonNull(StandardCharsets.UTF_8);
+    public static final Charset TRANSPORT_ENCODING = StandardCharsets.UTF_8;
 
     // TODO (2) automatically determine origin using network service
     // Dummy origin to send when connecting to the server

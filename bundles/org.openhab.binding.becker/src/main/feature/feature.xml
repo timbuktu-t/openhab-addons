@@ -4,6 +4,7 @@
 
 	<feature name="openhab-binding-becker" description="Becker Binding" version="${project.version}">
 		<feature>openhab-runtime-base</feature>
+		org.eclipse.jdt.feature.group
 		<bundle start-level="80">mvn:org.openhab.addons.bundles/org.openhab.binding.becker/${project.version}</bundle>
 	</feature>
 </features>

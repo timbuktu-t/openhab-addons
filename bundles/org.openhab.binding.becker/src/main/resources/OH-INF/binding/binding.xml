@@ -4,6 +4,7 @@
 	xsi:schemaLocation="https://openhab.org/schemas/binding/v1.0.0 https://openhab.org/schemas/binding-1.0.0.xsd">
 
 	<name>Becker Binding</name>
-	<description>This is the binding for Becker.</description>
+	<description>This binding integrates devices attached to a Becker CentralControl (CC).</description>
+	<author>Stefan Machura</author>
 
 </binding:binding>
