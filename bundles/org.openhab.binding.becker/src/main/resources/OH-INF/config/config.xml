@@ -62,4 +62,11 @@
 		</parameter>
 	</config-description>
 
+	<config-description uri="thing-type:becker:device">
+		<parameter name="id" type="integer" required="true">
+			<label>ID</label>
+			<description>The unique id assigned to this device by the bridge.</description>
+		</parameter>
+	</config-description>
+
 </config-description:config-descriptions>

@@ -110,7 +110,6 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
             refreshFuture.cancel(true);
         }
 
-        // TODO (1) switch to optional?
         if (t == null) {
             updateStatus(OFFLINE);
         } else {
@@ -163,25 +162,17 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
     }
 
     private void refreshDevices() {
-
-        // update lookup of all receivers and groups
         logger.debug("Refreshing devices");
         devices = Stream
                 .concat(socket.send(new ReadDeviceList("receivers")).map(r -> List.of(r.devices))
                         .orElse(Collections.emptyList()).stream(),
                         socket.send(new ReadDeviceList("groups")).map(r -> List.of(r.devices))
                                 .orElse(Collections.emptyList()).stream())
-                .filter(i -> "group".equals(i.type) && !i.name.isBlank()).collect(Collectors.toMap(i -> i.id, i -> i));
+                .filter(i -> i.id > 0 && "group".equals(i.type)).collect(Collectors.toMap(i -> i.id, i -> i));
 
-        // TODO (1) notify things so they can refresh their state
         logger.debug("Refreshing things");
-        /*
-         * getThing().getThings().forEach(t -> {
-         * if (t.getHandler() != null) {
-         * ((BeckerDeviceHandler) nonNull(t.getHandler())).onRefresh();
-         * }
-         * });
-         */
+        getThing().getThings().stream().map(t -> (BeckerDeviceHandler) t.getHandler()).filter(t -> t != null)
+                .forEach(t -> t.onRefresh());
 
         BeckerDiscoveryService discovery = this.discovery;
         if (discovery != null) {
@@ -204,6 +195,10 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
 
     public Collection<BeckerDevice> devices() {
         return devices.values();
+    }
+
+    public @Nullable BeckerDevice devices(int id) {
+        return devices.get(id);
     }
 
     public void discoveryService(@Nullable BeckerDiscoveryService discovery) {

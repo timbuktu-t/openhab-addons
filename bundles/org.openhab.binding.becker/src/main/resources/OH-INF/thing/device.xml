@@ -10,7 +10,7 @@
 		</supported-bridge-type-refs>
 		<label>Becker Roof Window</label>
 		<description>A roof window.</description>
-		<representation-property>deviceId</representation-property>
+		<representation-property>id</representation-property>
 		<config-description-ref uri="thing-type:becker:device"/>
 	</thing-type>
 

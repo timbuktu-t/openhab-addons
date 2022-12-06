@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.openhab.binding.becker.internal.discovery.BeckerDiscoveryService;
 import org.openhab.binding.becker.internal.handler.BeckerBridgeHandler;
+import org.openhab.binding.becker.internal.handler.BeckerDeviceHandler;
 import org.openhab.core.config.discovery.DiscoveryService;
 import org.openhab.core.io.net.http.WebSocketFactory;
 import org.openhab.core.thing.Bridge;
@@ -71,13 +72,9 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
             BeckerBridgeHandler bridge = new BeckerBridgeHandler((Bridge) thing, webSocket);
             registerDiscovery(bridge);
             return bridge;
+        } else if (SUPPORTED_DEVICE_TYPES.contains(thing.getThingTypeUID())) {
+            return new BeckerDeviceHandler(thing);
         }
-        /*
-         * TODO (1) return device handler
-         * else if (SUPPORTED_DEVICE_TYPES.contains(thing.getThingTypeUID())) {
-         * return new BeckerDeviceHandler(thing);
-         * }
-         */
         logger.warn("Unsupported thing type UID {} ", thing.getThingTypeUID());
         return null;
     }
@@ -109,17 +106,4 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
             reg.unregister();
         }
     }
-
-    /*
-     * TODO (1) remove if osgi injection into member works
-     * 
-     * @Reference
-     * protected void setHttpClientFactory(WebSocketFactory webSocketFactory) {
-     * this.webSocketClient = webSocketFactory.getCommonWebSocketClient();
-     * }
-     * 
-     * protected void unsetHttpClientFactory(WebSocketFactory webSocketFactory) {
-     * this.webSocketClient = null;
-     * }
-     */
 }
