@@ -10,6 +10,9 @@
 		</supported-bridge-type-refs>
 		<label>Becker Roof Window</label>
 		<description>A roof window.</description>
+		<channels>
+			<channel typeId="window" id="control"/>
+		</channels>
 		<representation-property>id</representation-property>
 		<config-description-ref uri="thing-type:becker:device"/>
 	</thing-type>
@@ -20,6 +23,9 @@
 		</supported-bridge-type-refs>
 		<label>Becker Shutter</label>
 		<description>A roller shutter.</description>
+		<channels>
+			<channel typeId="blinds" id="control"/>
+		</channels>
 		<representation-property>id</representation-property>
 		<config-description-ref uri="thing-type:becker:device"/>
 	</thing-type>
@@ -30,6 +36,9 @@
 		</supported-bridge-type-refs>
 		<label>Becker Venetian</label>
 		<description>A venetian blind.</description>
+		<channels>
+			<channel typeId="blinds" id="control"/>
+		</channels>
 		<representation-property>id</representation-property>
 		<config-description-ref uri="thing-type:becker:device"/>
 	</thing-type>

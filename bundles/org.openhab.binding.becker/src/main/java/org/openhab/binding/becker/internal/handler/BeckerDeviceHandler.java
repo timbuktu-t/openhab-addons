@@ -24,12 +24,16 @@ import java.math.BigDecimal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.becker.internal.BeckerDevice;
+import org.openhab.core.library.types.PercentType;
+import org.openhab.core.library.types.StopMoveType;
+import org.openhab.core.library.types.UpDownType;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
+import org.openhab.core.types.RefreshType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +59,17 @@ public final class BeckerDeviceHandler extends BaseThingHandler {
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        logger.debug("Received command {} for channel {}", command, channelUID);
+        logger.debug("Received command {} of type {} for channel {}", command, channelUID);
 
-        // TODO (2) implement channels
+        // TODO (2) implement commands
+
+        if (command instanceof RefreshType) {
+            logger.debug("Received refresh command");
+        } else if (command instanceof UpDownType || command instanceof StopMoveType) {
+            logger.debug("Received move command {}", command);
+        } else if (command instanceof PercentType) {
+            logger.debug("Received positional command for {} percent", ((PercentType) command).intValue());
+        }
     }
 
     @Override
