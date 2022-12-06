@@ -1,7 +1,5 @@
 package org.openhab.binding.becker.internal.command;
 
-import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.becker.internal.socket.BeckerCommand;
 
@@ -18,13 +16,12 @@ public final class ReadDeviceInfo extends BeckerCommand<ReadDeviceInfo.Result> {
 
     public static final class Result extends BeckerCommand.Result {
 
-        public String name = NULL;
         @SerializedName("auto_roof_window_time")
-        public Integer autoRoofWindowTime = 3;
+        public int autoRoofWindowTime = 3;
 
         @Override
         public String toString() {
-            return name;
+            return Integer.toString(autoRoofWindowTime);
         }
     }
 }

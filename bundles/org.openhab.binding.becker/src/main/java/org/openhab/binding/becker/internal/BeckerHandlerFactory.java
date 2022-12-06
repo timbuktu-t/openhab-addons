@@ -18,7 +18,6 @@ import static org.openhab.binding.becker.internal.BeckerBindingConstants.THING_T
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -50,9 +49,9 @@ import org.slf4j.LoggerFactory;
 @Component(service = ThingHandlerFactory.class, configurationPid = "binding.becker")
 public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
 
-    // TODO (1) localize all messages in English and German.
     // TODO (2) review and finalize files esp. documentation in README.md
-    // TODO (2) add JavaDoc and package-info
+    // TODO (3) localize all messages in English and German.
+    // TODO (3) add JavaDoc and package-info
 
     private final Logger logger = LoggerFactory.getLogger(BeckerHandlerFactory.class);
     private final Map<ThingUID, @Nullable ServiceRegistration<?>> discoveries = new HashMap<>();
@@ -99,13 +98,16 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
     }
 
     private void unregisterDiscovery(BeckerBridgeHandler bridge) {
-        Optional<ServiceRegistration<?>> reg = Optional.ofNullable(discoveries.remove(bridge.getThing().getUID()));
-        reg.flatMap(d -> Optional.ofNullable((BeckerDiscoveryService) bundleContext.getService(d.getReference())))
-                .ifPresent(s -> {
-                    bridge.discoveryService(null);
-                    s.deactivate();
-                });
-        reg.ifPresent(ServiceRegistration::unregister);
+        // TODO (2) switch to optionals?
+        ServiceRegistration<?> reg = discoveries.remove(bridge.getThing().getUID());
+        if (reg != null) {
+            BeckerDiscoveryService discovery = (BeckerDiscoveryService) bundleContext.getService(reg.getReference());
+            if (discovery != null) {
+                bridge.discoveryService(null);
+                discovery.deactivate();
+            }
+            reg.unregister();
+        }
     }
 
     /*

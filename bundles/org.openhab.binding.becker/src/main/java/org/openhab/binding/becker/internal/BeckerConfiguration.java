@@ -25,7 +25,10 @@ public final class BeckerConfiguration {
 
     public String host = "";
     public int port = 80;
-    public int connectionTimeout = 5;
+    public int connectionDelay = 1;
+    public int connectionInterval = 60;
+    public int refreshInterval = 600;
+    public int connectionTimeout = 10;
     public int requestTimeout = 10;
-    public int idleTimeout = 15;
+    public int idleTimeout = 3600;
 }

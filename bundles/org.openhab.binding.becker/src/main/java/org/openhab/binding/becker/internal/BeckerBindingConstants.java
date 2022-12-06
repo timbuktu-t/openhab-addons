@@ -29,7 +29,7 @@ import org.openhab.core.thing.ThingTypeUID;
 @NonNullByDefault
 public final class BeckerBindingConstants {
 
-    // ID of this binding.
+    // ID of this binding
     public static final String BINDING_ID = "becker";
 
     // List of all thing type UIDs
@@ -38,18 +38,21 @@ public final class BeckerBindingConstants {
     public static final ThingTypeUID THING_TYPE_VENETIAN = new ThingTypeUID(BINDING_ID, "venetian");
     public static final ThingTypeUID THING_TYPE_SHUTTER = new ThingTypeUID(BINDING_ID, "shutter");
 
-    // List of all device type UIDs i.e. excluding the bridge.
+    // List of all device type UIDs excluding the bridge
     public static final Set<ThingTypeUID> SUPPORTED_DEVICE_TYPES = Set.of(THING_TYPE_ROOF_WINDOW, THING_TYPE_VENETIAN,
             THING_TYPE_SHUTTER);
 
     // List of all supported hardware variants
-    public static final Set<String> SUPPORTED_HARDWARE_VARIANTS = Set.of("cc41");
+    public static final Set<String> SUPPORTED_HARDWARE_VARIANTS = Set.of("cc31", "cc41", "cc51");
 
-    // List of property names.
+    // Device vendor
+    public static final String VENDOR = "BECKER-Antriebe GmbH";
+
+    // List of custom property names
     public static final String PROPERTY_ID = "id";
 
-    // Text representing a null value.
-    public static final String NULL = "<none>";
+    // Text representing a null value
+    public static final String NULL = "none";
 
     // Timeout in seconds to stop forced discovery process
     public static final int DISCOVERY_TIMEOUT_SECONDS = 5;
@@ -60,7 +63,7 @@ public final class BeckerBindingConstants {
     // Transport encoding to use for binary conversion
     public static final Charset TRANSPORT_ENCODING = StandardCharsets.UTF_8;
 
-    // TODO (2) automatically determine origin using network service
+    // TODO (3) automatically determine origin using network service
     // Dummy origin to send when connecting to the server
     public static final String TRANSPORT_ORIGIN = "http://127.0.0.1:12345";
 

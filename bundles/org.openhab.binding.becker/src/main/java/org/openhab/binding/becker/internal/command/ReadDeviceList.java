@@ -21,7 +21,7 @@ public final class ReadDeviceList extends BeckerCommand<ReadDeviceList.Result> {
 
     @Override
     public String toString() {
-        return String.format("%s[%s]", method, type);
+        return String.format("%s for %s", method, type);
     }
 
     public static final class Result extends BeckerCommand.Result {

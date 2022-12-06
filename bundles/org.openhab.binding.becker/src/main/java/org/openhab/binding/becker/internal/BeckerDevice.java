@@ -1,18 +1,19 @@
 package org.openhab.binding.becker.internal;
 
+import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
 
 @NonNullByDefault
 public final class BeckerDevice {
 
-    public int id;
-    public @Nullable String type;
+    public int id = 0;
+    public String type = NULL;
     @SerializedName("device_type")
-    public @Nullable String subtype;
-    public @Nullable String name;
+    public String subtype = NULL;
+    public String name = NULL;
 
     public BeckerDevice() {
     }
