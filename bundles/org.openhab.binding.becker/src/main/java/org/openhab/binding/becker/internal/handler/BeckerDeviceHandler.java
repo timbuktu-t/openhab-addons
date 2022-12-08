@@ -61,9 +61,6 @@ public final class BeckerDeviceHandler extends BaseThingHandler {
         super(thing);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void initialize() {
         id = getConfig().containsKey(PROPERTY_ID) ? ((BigDecimal) getConfig().get(PROPERTY_ID)).intValue() : 0;

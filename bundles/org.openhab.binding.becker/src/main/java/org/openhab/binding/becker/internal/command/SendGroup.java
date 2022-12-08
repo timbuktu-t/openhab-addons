@@ -56,9 +56,6 @@ public final class SendGroup extends BeckerCommand<SendGroup.Result> {
         this.value = value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString() {
         return String.format("%s with %d", METHOD, id);

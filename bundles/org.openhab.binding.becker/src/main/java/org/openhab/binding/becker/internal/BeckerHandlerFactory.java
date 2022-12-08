@@ -58,17 +58,11 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
     @Reference
     private @NonNullByDefault({}) WebSocketFactory webSocketFactory;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         return THING_TYPE_BRIDGE.equals(thingTypeUID) || SUPPORTED_DEVICE_TYPES.contains(thingTypeUID);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected @Nullable ThingHandler createHandler(Thing thing) {
         if (THING_TYPE_BRIDGE.equals(thing.getThingTypeUID())) {
@@ -83,9 +77,6 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected synchronized void removeHandler(ThingHandler thing) {
         if (thing instanceof BeckerBridgeHandler) {

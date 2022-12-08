@@ -44,9 +44,6 @@ public final class ReadHardwareSerial extends BeckerCommand<ReadHardwareSerial.R
          */
         public String serialno = NULL;
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String toString() {
             return serialno;

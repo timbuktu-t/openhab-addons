@@ -58,9 +58,6 @@ public final class ReadFirmwareVersion extends BeckerCommand<ReadFirmwareVersion
             return String.format("%s-%s", rcode, rdate);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String toString() {
             return version();

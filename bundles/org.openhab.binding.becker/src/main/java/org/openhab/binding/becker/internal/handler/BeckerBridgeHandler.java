@@ -83,9 +83,6 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
         this.webSocket = webSocket;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void initialize() {
         config = getConfigAs(BeckerConfiguration.class);
@@ -93,9 +90,6 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
         updateStatus(UNKNOWN);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void dispose() {
         ScheduledFuture<?> connectionFuture = this.connectionFuture;

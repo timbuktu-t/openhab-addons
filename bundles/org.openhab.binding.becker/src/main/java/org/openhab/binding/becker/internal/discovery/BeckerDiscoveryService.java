@@ -52,27 +52,18 @@ public final class BeckerDiscoveryService extends AbstractDiscoveryService {
         this.bridge = bridge;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Activate
     public void activate(@Nullable Map<String, Object> configProperties) {
         super.activate(configProperties);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Deactivate
     public void deactivate() {
         super.deactivate();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void startScan() {
         onRefresh(bridge, true);

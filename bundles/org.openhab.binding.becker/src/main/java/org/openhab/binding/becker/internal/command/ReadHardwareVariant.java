@@ -44,9 +44,6 @@ public final class ReadHardwareVariant extends BeckerCommand<ReadHardwareVariant
          */
         public String variant = NULL;
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String toString() {
             return variant;

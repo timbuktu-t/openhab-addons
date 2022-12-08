@@ -44,9 +44,6 @@ public final class ReadDeviceList extends BeckerCommand<ReadDeviceList.Result> {
         this.type = type;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString() {
         return String.format("%s for %s", method, type);
@@ -63,9 +60,6 @@ public final class ReadDeviceList extends BeckerCommand<ReadDeviceList.Result> {
         @SerializedName("item_list")
         public BeckerDevice[] devices = new BeckerDevice[0];
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String toString() {
             return String.format("%d devices", devices.length);

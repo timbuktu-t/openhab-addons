@@ -44,9 +44,6 @@ public final class RegisterClient extends BeckerCommand<RegisterClient.Result> {
          */
         public boolean success = false;
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String toString() {
             return Boolean.toString(success);

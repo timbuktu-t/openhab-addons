@@ -25,6 +25,8 @@ import com.google.gson.annotations.SerializedName;
 /**
  * The {@link BeckerDevice} represents a device attached to the bridge. It is returned by {@link ReadDeviceList} and its
  * channels are mangaged by {@link BeckerDeviceHandler}.
+ * 
+ * @author Stefan Machura - Initial contribution
  */
 @NonNullByDefault
 public final class BeckerDevice {
@@ -58,9 +60,6 @@ public final class BeckerDevice {
     public BeckerDevice() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -72,9 +71,6 @@ public final class BeckerDevice {
         return result;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean equals(@Nullable Object obj) {
         if (this == obj)
@@ -95,9 +91,6 @@ public final class BeckerDevice {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString() {
         return String.format("%s:%s:%d", type, subtype, id);
