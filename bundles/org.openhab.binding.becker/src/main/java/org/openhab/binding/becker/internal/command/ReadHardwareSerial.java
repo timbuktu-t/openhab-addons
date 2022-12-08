@@ -17,19 +17,36 @@ import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.becker.internal.socket.BeckerCommand;
 
+/**
+ * The {@ReadHardwareSerial} represents a command to read the hardware serial number of the bridge.
+ * 
+ * @author Stefan Machura - Initial contribution
+ */
 @NonNullByDefault
 public final class ReadHardwareSerial extends BeckerCommand<ReadHardwareSerial.Result> {
 
     private static final String METHOD = "systemd.info_hw_serialno_read";
 
+    /**
+     * Creates a new {@link ReadHardwareSerial}.
+     */
     public ReadHardwareSerial() {
         super(METHOD, Result.class);
     }
 
+    /**
+     * The {@link Result} represents the hardware serial number read.
+     */
     public static final class Result extends BeckerCommand.Result {
 
+        /**
+         * The hardware serial number read or {@link NULL} if unknown.
+         */
         public String serialno = NULL;
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
             return serialno;

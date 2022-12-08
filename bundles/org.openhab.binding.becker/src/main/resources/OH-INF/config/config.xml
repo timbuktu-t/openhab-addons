@@ -6,56 +6,56 @@
 
 	<config-description uri="thing-type:becker:bridge">
 		<parameter-group name="connection">
-			<label>Connection settings</label>
+			<label>Connection</label>
 			<description>General connection settings.</description>
 		</parameter-group>
 		<parameter-group name="timeouts">
-			<label>Timeout settings</label>
+			<label>Timeouts</label>
 			<description>Advanced timeout settings.</description>
 			<advanced>true</advanced>
 		</parameter-group>
 		<parameter name="host" type="text" required="true" groupName="connection">
 			<label>Host</label>
-			<description>Network address or host name of the bridge.</description>
+			<description>Network address or host name of the Becker CentralControl.</description>
 			<context>network-address</context>
 		</parameter>
 		<parameter name="port" type="integer" min="1" max="65335" groupName="connection">
 			<label>Port</label>
-			<description>Network port of the bridge.</description>
+			<description>Network port of the Becker CentralControl.</description>
 			<default>80</default>
 		</parameter>
 		<parameter name="connectionDelay" type="integer" min="0" max="120" groupName="timeouts">
-			<label>Connection delay</label>
+			<label>Connection Delay</label>
 			<description>Time between binding initialization and first connection attempt (seconds, 0-120).</description>
 			<default>1</default>
 			<advanced>true</advanced>
 		</parameter>
 		<parameter name="connectionInterval" type="integer" min="0" max="600" groupName="timeouts">
-			<label>Connection interval</label>
-			<description>Time between failed connection attempts (seconds, 0-600).</description>
+			<label>Connection Interval</label>
+			<description>Time between connection attempts (seconds, 0-600).</description>
 			<default>60</default>
 			<advanced>true</advanced>
 		</parameter>
 		<parameter name="refreshInterval" type="integer" min="1" max="3600" groupName="timeouts">
-			<label>Refresh interval</label>
-			<description>Time between requests to refresh information from the bridge (seconds, 1-3600).</description>
+			<label>Refresh Interval</label>
+			<description>Time between requests to refresh information from the Becker CentralControl (seconds, 1-3600).</description>
 			<default>600</default>
 			<advanced>true</advanced>
 		</parameter>
 		<parameter name="connectionTimeout" type="integer" min="1" max="3600" groupName="timeouts">
-			<label>Connection timeout</label>
+			<label>Connection Timeout</label>
 			<description>Time before connection attempts are aborted (seconds, 1-3600).</description>
 			<default>10</default>
 			<advanced>true</advanced>
 		</parameter>
 		<parameter name="requestTimeout" type="integer" min="1" max="3600" groupName="timeouts">
-			<label>Request timeout</label>
+			<label>Request Timeout</label>
 			<description>Time before pending requests are aborted (seconds, 1-3600).</description>
 			<default>10</default>
 			<advanced>true</advanced>
 		</parameter>
 		<parameter name="idleTimeout" type="integer" min="1" max="3600" groupName="timeouts">
-			<label>Idle timeout</label>
+			<label>Idle Timeout</label>
 			<description>Time before connections are closed due to inactivity (seconds, 1-3600).</description>
 			<default>3600</default>
 			<advanced>true</advanced>
@@ -65,7 +65,7 @@
 	<config-description uri="thing-type:becker:device">
 		<parameter name="id" type="integer" required="true">
 			<label>ID</label>
-			<description>The unique id assigned to this device by the bridge.</description>
+			<description>The unique id assigned to this device by the Becker CentralControl.</description>
 		</parameter>
 	</config-description>
 

@@ -17,19 +17,36 @@ import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.becker.internal.socket.BeckerCommand;
 
+/**
+ * The {@ReadHardwareSerial} represents a command to read the hardware variant of the bridge.
+ * 
+ * @author Stefan Machura - Initial contribution
+ */
 @NonNullByDefault
 public final class ReadHardwareVariant extends BeckerCommand<ReadHardwareVariant.Result> {
 
     private static final String METHOD = "systemd.info_hw_variant_read";
 
+    /**
+     * Creates a new {@link ReadHardwareVariant}.
+     */
     public ReadHardwareVariant() {
         super(METHOD, Result.class);
     }
 
+    /**
+     * The {@link Result} represents the hardware variant read.
+     */
     public static final class Result extends BeckerCommand.Result {
 
+        /**
+         * The hardware variant read or {@link NULL} if unknown.
+         */
         public String variant = NULL;
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
             return variant;

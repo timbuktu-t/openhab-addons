@@ -38,6 +38,13 @@ import org.openhab.core.types.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link BeckerBridgeHandler} is responsible to communicate with a device attached to the bridge and provide its
+ * channels. It uses the connection maintained by the bridge to send commands and the bridges status and device list to
+ * update its own status.
+ *
+ * @author Stefan Machura - Initial contribution
+ */
 @NonNullByDefault
 public final class BeckerDeviceHandler extends BaseThingHandler {
 
@@ -45,16 +52,29 @@ public final class BeckerDeviceHandler extends BaseThingHandler {
 
     private int id = 0;
 
+    /**
+     * Creates a new {@link BeckerBridgeHandler}.
+     * 
+     * @param thing the {@link Thing}
+     */
     public BeckerDeviceHandler(Thing thing) {
         super(thing);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize() {
         id = getConfig().containsKey(PROPERTY_ID) ? ((BigDecimal) getConfig().get(PROPERTY_ID)).intValue() : 0;
         onRefresh();
     }
 
+    /**
+     * Handles commands. This method supports a single channel of type {@code rollershutter}. This binding supports only
+     * {@link UpDownType} and {@link StopMoveType} and maps positional commands using {@link PercentType} to these
+     * commands for compatibility.
+     */
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         logger.debug("Received command {} for channel {}", command, channelUID);
@@ -77,11 +97,17 @@ public final class BeckerDeviceHandler extends BaseThingHandler {
         }
     }
 
+    /**
+     * Handles bridge status changes.
+     */
     @Override
     public void bridgeStatusChanged(@Nullable ThingStatusInfo bridgeStatusInfo) {
         onRefresh();
     }
 
+    /**
+     * Handles bridge status and device list changes. Updates this things status accordingly.
+     */
     void onRefresh() {
         BeckerBridgeHandler bridge = bridge();
 
@@ -90,7 +116,7 @@ public final class BeckerDeviceHandler extends BaseThingHandler {
         } else if (bridge.getThing().getStatus() != ONLINE) {
             updateStatus(OFFLINE, BRIDGE_OFFLINE);
         } else {
-            BeckerDevice device = bridge.devices(id);
+            BeckerDevice device = bridge.devices.get(id);
 
             if (device != null && getThing().getThingTypeUID().getId().equals(device.subtype)) {
                 updateStatus(ONLINE);
@@ -100,6 +126,11 @@ public final class BeckerDeviceHandler extends BaseThingHandler {
         }
     }
 
+    /**
+     * Returns the bridges {@link BeckerBridgeHandler}.
+     * 
+     * @return the bridges {@link BeckerBridgeHandler} or {@code null} if missing
+     */
     private @Nullable BeckerBridgeHandler bridge() {
         Bridge bridge = getBridge();
 

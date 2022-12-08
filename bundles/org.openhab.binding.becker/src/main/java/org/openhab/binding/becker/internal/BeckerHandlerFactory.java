@@ -41,8 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link BeckerHandlerFactory} is responsible for creating things and thing
- * handlers.
+ * The {@link BeckerHandlerFactory} is responsible for creating bridge and device things and their handlers. For each
+ * bridge this factory also creates an associated {@link BeckerDiscoveryService}.
  *
  * @author Stefan Machura - Initial contribution
  */
@@ -50,9 +50,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = ThingHandlerFactory.class, configurationPid = "binding.becker")
 public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
 
-    // TODO (2) review and finalize files esp. documentation in README.md
-    // TODO (3) localize all messages in English and German.
-    // TODO (3) add JavaDoc and package-info
+    // TODO (2) write documentation in README.md
 
     private final Logger logger = LoggerFactory.getLogger(BeckerHandlerFactory.class);
     private final Map<ThingUID, @Nullable ServiceRegistration<?>> discoveries = new HashMap<>();
@@ -60,11 +58,17 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
     @Reference
     private @NonNullByDefault({}) WebSocketFactory webSocketFactory;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         return THING_TYPE_BRIDGE.equals(thingTypeUID) || SUPPORTED_DEVICE_TYPES.contains(thingTypeUID);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected @Nullable ThingHandler createHandler(Thing thing) {
         if (THING_TYPE_BRIDGE.equals(thing.getThingTypeUID())) {
@@ -79,6 +83,9 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected synchronized void removeHandler(ThingHandler thing) {
         if (thing instanceof BeckerBridgeHandler) {
@@ -86,6 +93,11 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
         }
     }
 
+    /**
+     * Creates and registers a {@link BeckerDiscoveryService} associated with the bridge.
+     * 
+     * @param bridge the {@link BeckerBridgeHandler}
+     */
     private void registerDiscovery(BeckerBridgeHandler bridge) {
         BeckerDiscoveryService discovery = new BeckerDiscoveryService(bridge);
         discovery.activate(null);
@@ -94,8 +106,12 @@ public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
                 bundleContext.registerService(DiscoveryService.class.getName(), discovery, new Hashtable<>()));
     }
 
+    /**
+     * Unregisters the {@link BeckerDiscoveryService} associated with the bridge.
+     * 
+     * @param bridge the {@link BeckerBridgeHandler}
+     */
     private void unregisterDiscovery(BeckerBridgeHandler bridge) {
-        // TODO (2) switch to optionals?
         ServiceRegistration<?> reg = discoveries.remove(bridge.getThing().getUID());
         if (reg != null) {
             BeckerDiscoveryService discovery = (BeckerDiscoveryService) bundleContext.getService(reg.getReference());

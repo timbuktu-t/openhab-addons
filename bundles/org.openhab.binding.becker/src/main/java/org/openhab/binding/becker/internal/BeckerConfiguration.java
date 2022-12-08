@@ -15,8 +15,8 @@ package org.openhab.binding.becker.internal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link BeckerConfiguration} class contains fields mapping thing
- * configuration parameters.
+ * The {@link BeckerConfiguration} class contains fields mapping the thing configuration parameters. See
+ * {@code config.xml} for further information.
  *
  * @author Stefan Machura - Initial contribution
  */

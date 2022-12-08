@@ -25,11 +25,9 @@ import static org.openhab.core.thing.ThingStatus.UNKNOWN;
 import static org.openhab.core.thing.ThingStatusDetail.COMMUNICATION_ERROR;
 
 import java.net.SocketException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,8 +52,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link BeckerBridgeHandler} is responsible for handling commands, which
- * are sent to one of the channels.
+ * The {@link BeckerBridgeHandler} is responsible to maintain the connection to the bridge, periodically refresh device
+ * information and provide that information to the {@link BeckerDeviceHandler}.
  *
  * @author Stefan Machura - Initial contribution
  */
@@ -63,30 +61,41 @@ import org.slf4j.LoggerFactory;
 public class BeckerBridgeHandler extends BaseBridgeHandler {
 
     private final Logger logger = LoggerFactory.getLogger(BeckerBridgeHandler.class);
-    private final WebSocketClient webSocket;
 
-    final BeckerSocket socket = new BeckerSocket(this);
+    public final WebSocketClient webSocket;
+    public final BeckerSocket socket = new BeckerSocket(this, scheduler);
 
-    private Map<Integer, BeckerDevice> devices = Collections.unmodifiableMap(Collections.emptyMap());
-    private BeckerConfiguration config = new BeckerConfiguration();
+    public Map<Integer, BeckerDevice> devices = Collections.unmodifiableMap(Collections.emptyMap());
+    public BeckerConfiguration config = new BeckerConfiguration();
 
-    // TODO (2) replace nullabled with optionals?
     private @Nullable BeckerDiscoveryService discovery;
     private @Nullable ScheduledFuture<?> connectionFuture;
     private @Nullable ScheduledFuture<?> refreshFuture;
 
+    /**
+     * Creates a new {@link BeckerBridgeHandler}.
+     * 
+     * @param bridge the {@link Bridge}
+     * @param webSocket the {@link WebSocketClient} to use for communication
+     */
     public BeckerBridgeHandler(Bridge bridge, WebSocketClient webSocket) {
         super(bridge);
         this.webSocket = webSocket;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize() {
         config = getConfigAs(BeckerConfiguration.class);
-        connectionFuture = scheduler.schedule(socket::connect, config().connectionDelay, SECONDS);
+        connectionFuture = scheduler.schedule(socket::connect, config.connectionDelay, SECONDS);
         updateStatus(UNKNOWN);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void dispose() {
         ScheduledFuture<?> connectionFuture = this.connectionFuture;
@@ -100,17 +109,28 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
         socket.close();
     }
 
+    /**
+     * Handles connects. When a connection is established, this method retrieves general information
+     * about the bridge and starts periodic polling to keep the connection alive and refresh the list of devices
+     * attached to the bridge.
+     */
     public void onConnect() {
         refreshDeviceInfo();
 
         if (refreshFuture == null) {
             refreshFuture = scheduler.scheduleWithFixedDelay(() -> {
                 refreshDevices();
-            }, 0, config().refreshInterval, SECONDS);
+            }, 0, config.refreshInterval, SECONDS);
         }
     }
 
-    public void onDisconnect(@Nullable Throwable t) {
+    /**
+     * Handles disconnects. When a connection is closed, this method updates the thing status and schedules a
+     * reconnection attempt if neccesary.
+     * 
+     * @param cause the cause or {@code null} if the binding is disposed and should not reconnect
+     */
+    public void onDisconnect(@Nullable Throwable cause) {
         ScheduledFuture<?> refreshFuture = this.refreshFuture;
 
         this.refreshFuture = null;
@@ -119,19 +139,25 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
             refreshFuture.cancel(true);
         }
 
-        if (t == null) {
+        if (cause == null) {
             updateStatus(OFFLINE);
         } else {
-            updateStatus(OFFLINE, COMMUNICATION_ERROR, t.toString());
-            this.connectionFuture = scheduler.schedule(socket::connect, config().connectionInterval, SECONDS);
+            updateStatus(OFFLINE, COMMUNICATION_ERROR, cause.toString());
+            this.connectionFuture = scheduler.schedule(socket::connect, config.connectionInterval, SECONDS);
         }
     }
 
+    /**
+     * Handles commands. This method does nothing as the bridge currently does not support any channels.
+     */
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         logger.debug("Received command {} for channel {}", command, channelUID);
     }
 
+    /**
+     * Registers this bridge as a new client and refreshes general information like serial number and firmware version.
+     */
     private void refreshDeviceInfo() {
         logger.debug("Refreshing device information");
 
@@ -160,46 +186,40 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
         });
     }
 
+    /**
+     * Refreshes the list of devices attached to the bridge and notifies both discovery and all attached things
+     * when the list has changed.
+     */
     private void refreshDevices() {
-        logger.debug("Refreshing devices");
-        devices = Stream
+        logger.debug("Retrieving devices");
+        Map<Integer, BeckerDevice> devices = Stream
                 .concat(socket.send(new ReadDeviceList("receivers")).map(r -> List.of(r.devices))
                         .orElse(Collections.emptyList()).stream(),
                         socket.send(new ReadDeviceList("groups")).map(r -> List.of(r.devices))
                                 .orElse(Collections.emptyList()).stream())
                 .filter(i -> i.id > 0 && "group".equals(i.type)).collect(Collectors.toMap(i -> i.id, i -> i));
 
-        logger.debug("Refreshing things");
-        getThing().getThings().stream().map(t -> (BeckerDeviceHandler) t.getHandler()).filter(t -> t != null)
-                .forEach(t -> t.onRefresh());
+        if (this.devices.equals(devices)) {
+            logger.debug("Devices have changed");
+            this.devices = devices;
 
-        BeckerDiscoveryService discovery = this.discovery;
-        if (discovery != null) {
-            logger.debug("Refreshing discoveries");
-            discovery.onRefresh(this, false);
+            logger.debug("Refreshing things");
+            getThing().getThings().stream().map(t -> (BeckerDeviceHandler) t.getHandler()).filter(t -> t != null)
+                    .forEach(t -> t.onRefresh());
+
+            BeckerDiscoveryService discovery = this.discovery;
+            if (discovery != null) {
+                logger.debug("Refreshing discoveries");
+                discovery.onRefresh(this, false);
+            }
         }
     }
 
-    public BeckerConfiguration config() {
-        return config;
-    }
-
-    public ScheduledExecutorService scheduler() {
-        return scheduler;
-    }
-
-    public WebSocketClient webSocket() {
-        return webSocket;
-    }
-
-    public Collection<BeckerDevice> devices() {
-        return devices.values();
-    }
-
-    public @Nullable BeckerDevice devices(int id) {
-        return devices.get(id);
-    }
-
+    /**
+     * Sets the discovery service associated with this bridge.
+     * 
+     * @param discovery the {@link BeckerDiscoveryService} or {@code null} if the binding is disposed
+     */
     public void discoveryService(@Nullable BeckerDiscoveryService discovery) {
         this.discovery = discovery;
     }

@@ -16,32 +16,51 @@ import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-// non-transient members are serialized as parameters
+import com.google.gson.Gson;
 
+// non-transient members are serialized as parameters
+/**
+ * The {@link BeckerCommand} represents a command that can be sent using a {@link BeckerSocket} and the result that is
+ * expected after execution. Non-transient member variables of commands are serialized to JSON and results deserialized
+ * from JSON by the socket using {@link Gson} so annotations can be used here.
+ * 
+ * @author Stefan Machura - Initial contribution
+ */
 @NonNullByDefault
 public abstract class BeckerCommand<R extends BeckerCommand.Result> {
 
     transient protected final String method;
     transient final Class<R> resultType;
 
+    /**
+     * Creates a new {@link BeckerCommand}.
+     * 
+     * @param method the JSONRPC method to invoke
+     * @param resultType the expected result type
+     */
     protected BeckerCommand(String method, Class<R> resultType) {
         this.method = method;
         this.resultType = resultType;
     }
 
-    // subclasses are encouraged to override toString() for meaningful log entries
-
+    /**
+     * Returns a string representing this command for logging purposes. Subclasses should override this method for
+     * meaningful log entries.
+     */
     @Override
     public String toString() {
         return method;
     }
 
-    // non-transient members are deserialized from result in JSON-RPC response
-
+    /**
+     * The {@link Result} represents the result that is expected when the command is executed.
+     */
     public static abstract class Result {
 
-        // subclasses are encouraged to override toString() for meaningful log entries
-
+        /**
+         * Returns a string representing this response for logging purposes. Subclasses should override this method for
+         * meaningful log entries.
+         */
         @Override
         public String toString() {
             return NULL;

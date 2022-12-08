@@ -20,8 +20,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.ThingTypeUID;
 
 /**
- * The {@link BeckerBindingConstants} class defines common constants, which are
- * used across the whole binding.
+ * The {@link BeckerBindingConstants} class defines common constants, which are used across the whole binding. This
+ * class cannot be instantiated.
  *
  * @author Stefan Machura - Initial contribution
  */

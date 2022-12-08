@@ -17,24 +17,50 @@ import static org.openhab.binding.becker.internal.BeckerBindingConstants.NULL;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.becker.internal.socket.BeckerCommand;
 
+/**
+ * The {@ReadFirmwareVersion} represents a command to read the firmware version of the bridge.
+ * 
+ * @author Stefan Machura - Initial contribution
+ */
 @NonNullByDefault
 public final class ReadFirmwareVersion extends BeckerCommand<ReadFirmwareVersion.Result> {
 
     private static final String METHOD = "systemd.info_release_data_read";
 
+    /**
+     * Creates a new {@link ReadFirmwareVersion}.
+     */
     public ReadFirmwareVersion() {
         super(METHOD, Result.class);
     }
 
+    /**
+     * The {@link Result} represents the firmware version read.
+     */
     public static final class Result extends BeckerCommand.Result {
 
+        /**
+         * The release code component of the firmware version read or {@link NULL} if unknown.
+         */
         public String rcode = NULL;
+
+        /**
+         * The release date component of the firmware version read or {@link NULL} if unknown.
+         */
         public String rdate = NULL;
 
+        /**
+         * Returns the firmware version read.
+         * 
+         * @return the firmware version read
+         */
         public String version() {
             return String.format("%s-%s", rcode, rdate);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
             return version();

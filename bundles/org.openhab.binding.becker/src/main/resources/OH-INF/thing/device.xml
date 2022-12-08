@@ -9,7 +9,7 @@
 			<bridge-type-ref id="bridge"/>
 		</supported-bridge-type-refs>
 		<label>Becker Roof Window</label>
-		<description>A roof window.</description>
+		<description>A single or multiple grouped roof windows.</description>
 		<channels>
 			<channel typeId="window" id="control"/>
 		</channels>
@@ -22,7 +22,7 @@
 			<bridge-type-ref id="bridge"/>
 		</supported-bridge-type-refs>
 		<label>Becker Shutter</label>
-		<description>A roller shutter.</description>
+		<description>A single or multiple grouped roller shutters.</description>
 		<channels>
 			<channel typeId="blinds" id="control"/>
 		</channels>
@@ -35,7 +35,7 @@
 			<bridge-type-ref id="bridge"/>
 		</supported-bridge-type-refs>
 		<label>Becker Venetian</label>
-		<description>A venetian blind.</description>
+		<description>A single or multiple grouped venetian blinds.</description>
 		<channels>
 			<channel typeId="blinds" id="control"/>
 		</channels>
