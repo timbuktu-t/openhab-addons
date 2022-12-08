@@ -199,7 +199,7 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
                                 .orElse(Collections.emptyList()).stream())
                 .filter(i -> i.id > 0 && "group".equals(i.type)).collect(Collectors.toMap(i -> i.id, i -> i));
 
-        if (this.devices.equals(devices)) {
+        if (!this.devices.equals(devices)) {
             logger.debug("Devices have changed");
             this.devices = devices;
 

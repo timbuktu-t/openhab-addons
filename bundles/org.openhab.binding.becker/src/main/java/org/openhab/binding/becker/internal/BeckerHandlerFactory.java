@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = ThingHandlerFactory.class, configurationPid = "binding.becker")
 public final class BeckerHandlerFactory extends BaseThingHandlerFactory {
 
-    // TODO (2) write documentation in README.md
+    // TODO (1) write documentation in README.md
 
     private final Logger logger = LoggerFactory.getLogger(BeckerHandlerFactory.class);
     private final Map<ThingUID, @Nullable ServiceRegistration<?>> discoveries = new HashMap<>();

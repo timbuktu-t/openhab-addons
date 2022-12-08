@@ -1,76 +1,81 @@
 # Becker Binding
 
-_Give some details about what this binding is meant for - a protocol, system, specific device._
-
-_If possible, provide some resources like pictures (only PNG is supported currently), a video, etc. to give an impression of what can be done with this binding._
-_You can place such resources into a `doc` folder next to this README.md._
-
-_Put each sentence in a separate line to improve readability of diffs._
+The Becker binding integrates windows and blinds attached to a [Becker CentralControl](https://www.becker-antriebe.com/de/smart-home/centralcontrol/) with OpenHAB.
 
 ## Supported Things
 
-_Please describe the different supported things / devices including their ThingTypeUID within this section._
-_Which different types are supported, which models were tested etc.?_
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
+This binding should work with any CentralControl and the following device types:
 
-- `bridge`: Short description of the Bridge, if any
-- `sample`: Short description of the Thing with the ThingTypeUID `sample`
+ * roof windows
+ * roller shutters
+ * venetian blinds
+
+In addition, this binding should also work with any device groups of these types.
+It has been tested with [Roto Designo R6](https://www.roto-dachfenster.de/) connected to a Becker CentralControl CC41 using Centronics.
+As Centronics allows neither positional movement nor feedback of the current position, these features are not supported.
+Feel free to contact me if you own other devices and are willing to test them with snapshot builds.
 
 ## Discovery
 
-_Describe the available auto-discovery features here._
-_Mention for what it works and what needs to be kept in mind when using it._
-
-## Binding Configuration
-
-_If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it._
-_In this section, you should link to this file and provide some information about the options._
-_The file could e.g. look like:_
-
-```
-# Configuration for the Becker Binding
-#
-# Default secret key for the pairing of the Becker Thing.
-# It has to be between 10-40 (alphanumeric) characters.
-# This may be changed by the user for security reasons.
-secret=openHABSecret
-```
-
-_Note that it is planned to generate some part of this based on the information that is available within ```src/main/resources/OH-INF/binding``` of your binding._
-
-_If your binding does not offer any generic configurations, you can remove this section completely._
+The CentralControl has to be configured manually.
+Once it is online, any attached devices and groups should be discovered automatically.
 
 ## Thing Configuration
 
-_Describe what is needed to manually configure a thing, either through the UI or via a thing-file._
-_This should be mainly about its mandatory and optional configuration parameters._
+### `CentralControl` Configuration
 
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
+The CentralControl has to be configured manually using network address and port, and provides additional settings for fine tuning.
+When changing these advanced settings, please keep in mind that *refreshInterval* also determines the maximum delay until new devices are discovered and old devices go to offline, and that *refreshInterval* must be set higher than *idleTimeout* or the connection might time out and will be reestablished periodically.
 
-### `sample` Thing Configuration
+| Name            | Type    | Description                                                                     | Default | Required | Advanced |
+|-----------------|---------|---------------------------------------------------------------------------------|---------|----------|----------|
+| host               | text    | Network address or host name of the Becker CentralControl.                   |         | yes      | no       |
+| port               | integer | Network port of the Becker CentralControl.                                   | 80      | no       | no       |
+| connectionDelay    | integer | Time between binding initialization and first connection attempt.            | 1       | no       | yes      |
+| connectionInterval | integer | Time between connection attempts.                                            | 60      | no       | yes      |
+| refreshInterval    | integer | Time between requests to refresh information from the Becker CentralControl. | 600     | no       | yes      |
+| connectionTimeout  | integer | Time before connection attempts are aborted.                                 | 10      | no       | yes      |
+| requestTimeout     | integer | Time before pending requests are aborted.                                    | 10      | no       | yes      |
+| idleTimeout        | integer | Time before connections are closed due to inactivity.                        | 3600    | no       | yes      |
 
-| Name            | Type    | Description                           | Default | Required | Advanced |
-|-----------------|---------|---------------------------------------|---------|----------|----------|
-| hostname        | text    | Hostname or IP address of the device  | N/A     | yes      | no       |
-| password        | text    | Password to access the device         | N/A     | yes      | no       |
-| refreshInterval | integer | Interval the device is polled in sec. | 600     | no       | yes      |
+### `Device` Configuration
+
+Devices and groups can be added manually using the *id* assigned by the CentralControl.
+This *id* can be found in the inbox of OpenHAB once the devices and groups are discovered.
+It can also be found in the settings of receivers and groups in Beckers' CentralControl app.
+ 
+| Name               | Type    | Description                                                                  | Default | Required | Advanced |
+|--------------------|---------|------------------------------------------------------------------------------|---------|----------|----------|
+| id                 | integer | The unique id assigned to this device by the Becker CentralControl.          |         | yes      | no       |
 
 ## Channels
 
-_Here you should provide information about available channel types, what their meaning is and how they can be used._
+The bridge currently has no channels. Devices and groups only have a single channel to control them:
 
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
+| Channel | Type          | Read/Write | Description                                       |
+|---------|---------------|------------|---------------------------------------------------|
+| control | Rollershutter | RW         | Controls device movement using up, down and stop. |
 
-| Channel | Type   | Read/Write | Description                 |
-|---------|--------|------------|-----------------------------|
-| control | Switch | RW         | This is the control channel |
+Please note that this binding supports neither positional movement nor feedback of the current position.
+Positional movement using percentages will be mapped to basic commands with 0% corresponding to UP and any other value to DOWN.
+The current position reported by the channel will always correspond to the last command or percentage sent to it.
 
 ## Full Example
 
-_Provide a full usage example based on textual configuration files._
-_*.things, *.items examples are mandatory as textual configuration is well used by many users._
-_*.sitemap examples are optional._
+becker.things:
 
-## Any custom content here!
+```
+Bridge becker:bridge:home "Becker CentralControl CC41" [ host="1.2.3.4" ] {
+        Thing roof-window livingroom [ id=12 ]
+        Thing shutter livingroom [ id=13 ]
+        Thing venetian livingroom [ id=14 ]
+}
+```
 
-_Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
+becker.items:
+
+```
+Rollershutter Livingroom_Windows { channel="becker:roof-window:home:livingroom:control" }
+Rollershutter Livingroom_Shutters { channel="becker:shutter:home:livingroom:control" }
+Rollershutter Livingroom_Blinds { channel="becker:venetian:home:livingroom:control" }
+```
