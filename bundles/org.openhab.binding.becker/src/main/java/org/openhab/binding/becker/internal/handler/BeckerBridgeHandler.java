@@ -1,3 +1,15 @@
+/**
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.becker.internal.handler;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -27,7 +39,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.openhab.binding.becker.internal.BeckerConfiguration;
 import org.openhab.binding.becker.internal.BeckerDevice;
-import org.openhab.binding.becker.internal.command.ReadDeviceInfo;
 import org.openhab.binding.becker.internal.command.ReadDeviceList;
 import org.openhab.binding.becker.internal.command.ReadFirmwareVersion;
 import org.openhab.binding.becker.internal.command.ReadHardwareSerial;
@@ -54,11 +65,10 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
     private final Logger logger = LoggerFactory.getLogger(BeckerBridgeHandler.class);
     private final WebSocketClient webSocket;
 
-    private final BeckerSocket socket = new BeckerSocket(this);
+    final BeckerSocket socket = new BeckerSocket(this);
 
     private Map<Integer, BeckerDevice> devices = Collections.unmodifiableMap(Collections.emptyMap());
     private BeckerConfiguration config = new BeckerConfiguration();
-    private int autoRoofWindowTime = 3;
 
     // TODO (2) replace nullabled with optionals?
     private @Nullable BeckerDiscoveryService discovery;
@@ -94,8 +104,7 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
         refreshDeviceInfo();
 
         if (refreshFuture == null) {
-            refreshFuture = scheduler.scheduleAtFixedRate(() -> {
-                refreshAutoRoofWindowTime();
+            refreshFuture = scheduler.scheduleWithFixedDelay(() -> {
                 refreshDevices();
             }, 0, config().refreshInterval, SECONDS);
         }
@@ -121,8 +130,6 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         logger.debug("Received command {} for channel {}", command, channelUID);
-
-        // TODO (2) implement channel for auto roof-window time
     }
 
     private void refreshDeviceInfo() {
@@ -150,14 +157,6 @@ public class BeckerBridgeHandler extends BaseBridgeHandler {
 
         socket.send(new ReadFirmwareVersion()).ifPresent(r -> {
             updateProperty(PROPERTY_FIRMWARE_VERSION, r.version());
-        });
-    }
-
-    public void refreshAutoRoofWindowTime() {
-        logger.debug("Refreshing auto roof-window time");
-
-        socket.send(new ReadDeviceInfo()).ifPresent(r -> {
-            autoRoofWindowTime = r.autoRoofWindowTime;
         });
     }
 

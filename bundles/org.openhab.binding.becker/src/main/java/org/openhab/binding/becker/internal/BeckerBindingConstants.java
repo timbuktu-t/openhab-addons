@@ -42,6 +42,9 @@ public final class BeckerBindingConstants {
     public static final Set<ThingTypeUID> SUPPORTED_DEVICE_TYPES = Set.of(THING_TYPE_ROOF_WINDOW, THING_TYPE_VENETIAN,
             THING_TYPE_SHUTTER);
 
+    // List of all device channel IDs
+    public static final String CHANNEL_DEVICE_CONTROL = "control";
+
     // List of all supported hardware variants
     public static final Set<String> SUPPORTED_HARDWARE_VARIANTS = Set.of("cc31", "cc41", "cc51");
 
@@ -63,7 +66,6 @@ public final class BeckerBindingConstants {
     // Transport encoding to use for binary conversion
     public static final Charset TRANSPORT_ENCODING = StandardCharsets.UTF_8;
 
-    // TODO (3) automatically determine origin using network service
     // Dummy origin to send when connecting to the server
     public static final String TRANSPORT_ORIGIN = "http://127.0.0.1:12345";
 

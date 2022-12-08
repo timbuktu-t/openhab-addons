@@ -1,8 +1,8 @@
 /**
- * Copyright (c) 2014,2019 by the respective copyright holders.
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
- * information regarding copyright ownership.
+ * information.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.becker.internal.handler;
 
+import static org.openhab.binding.becker.internal.BeckerBindingConstants.CHANNEL_DEVICE_CONTROL;
 import static org.openhab.binding.becker.internal.BeckerBindingConstants.PROPERTY_ID;
 import static org.openhab.core.thing.ThingStatus.OFFLINE;
 import static org.openhab.core.thing.ThingStatus.ONLINE;
@@ -24,6 +25,7 @@ import java.math.BigDecimal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.becker.internal.BeckerDevice;
+import org.openhab.binding.becker.internal.command.SendGroup;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.StopMoveType;
 import org.openhab.core.library.types.UpDownType;
@@ -33,7 +35,6 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
-import org.openhab.core.types.RefreshType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,21 +55,25 @@ public final class BeckerDeviceHandler extends BaseThingHandler {
         onRefresh();
     }
 
-    // vent is automatically reset to down after 5 minutes; any other command
-    // cancels timer
-
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        logger.debug("Received command {} of type {} for channel {}", command, channelUID);
+        logger.debug("Received command {} for channel {}", command, channelUID);
 
-        // TODO (2) implement commands
+        BeckerBridgeHandler bridge = bridge();
 
-        if (command instanceof RefreshType) {
-            logger.debug("Received refresh command");
-        } else if (command instanceof UpDownType || command instanceof StopMoveType) {
-            logger.debug("Received move command {}", command);
-        } else if (command instanceof PercentType) {
-            logger.debug("Received positional command for {} percent", ((PercentType) command).intValue());
+        if (bridge != null && channelUID.getId().equals(CHANNEL_DEVICE_CONTROL)) {
+            if (command == UpDownType.UP || command.equals(PercentType.ZERO)) {
+                bridge.socket.send(SendGroup.Command.UP.toDevice(id));
+                updateState(channelUID, PercentType.ZERO);
+            } else if (command == UpDownType.DOWN) {
+                bridge.socket.send(SendGroup.Command.DOWN.toDevice(id));
+                updateState(channelUID, PercentType.HUNDRED);
+            } else if (command == StopMoveType.STOP) {
+                bridge.socket.send(SendGroup.Command.STOP.toDevice(id));
+            } else if (command instanceof PercentType) {
+                bridge.socket.send(SendGroup.Command.DOWN.toDevice(id));
+                updateState(channelUID, (PercentType) command);
+            }
         }
     }
 
@@ -78,15 +83,14 @@ public final class BeckerDeviceHandler extends BaseThingHandler {
     }
 
     void onRefresh() {
-        Bridge bridge = getBridge();
-        BeckerBridgeHandler bridgeHandler = bridge();
+        BeckerBridgeHandler bridge = bridge();
 
-        if (bridge == null || bridgeHandler == null) {
+        if (bridge == null) {
             updateStatus(OFFLINE, BRIDGE_UNINITIALIZED);
-        } else if (bridge.getStatus() != ONLINE) {
+        } else if (bridge.getThing().getStatus() != ONLINE) {
             updateStatus(OFFLINE, BRIDGE_OFFLINE);
         } else {
-            BeckerDevice device = bridgeHandler.devices(id);
+            BeckerDevice device = bridge.devices(id);
 
             if (device != null && getThing().getThingTypeUID().getId().equals(device.subtype)) {
                 updateStatus(ONLINE);
