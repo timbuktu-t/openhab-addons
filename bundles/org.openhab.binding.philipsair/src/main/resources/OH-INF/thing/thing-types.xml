@@ -32,10 +32,10 @@
 		<label>Philips Air Purifier</label>
 		<description>Philips Air Purifier using COAP protocol</description>
 		<channel-groups>
-			<channel-group typeId="controls-basic" id="controls"/>
+			<channel-group typeId="controls-adv" id="controls"/>
 			<channel-group typeId="controls-ui" id="controls-ui"/>
-			<channel-group typeId="sensors-basic" id="sensors"/>
-			<channel-group typeId="filters" id="filters"/>
+			<channel-group typeId="sensors-adv" id="sensors"/>
+			<channel-group typeId="filters-wicks" id="filters"/>
 		</channel-groups>
 		<config-description-ref uri="thing-type:philipsair:config"/>
 	</thing-type>
