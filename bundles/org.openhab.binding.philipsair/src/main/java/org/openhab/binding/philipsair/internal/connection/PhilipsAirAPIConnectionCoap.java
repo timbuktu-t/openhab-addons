@@ -59,7 +59,7 @@ public class PhilipsAirAPIConnectionCoap extends PhilipsAirAPIConnection {
     // port to use for communication
     private static final int PORT = 5683;
     // timeout for observations before resynchronizing
-    private static final long OBSERVATION_TIMEOUT_MS = 30000;
+    private static final long OBSERVATION_TIMEOUT_MS = 900000;
     // timeout for synchronous calls and first observation before failing the connection
     private static final long CONNECTION_TIMEOUT_MS = 5000;
 
@@ -73,7 +73,6 @@ public class PhilipsAirAPIConnectionCoap extends PhilipsAirAPIConnection {
     private @Nullable CoapObserveRelation statusObserveRelation = null;
     private volatile @Nullable JsonElement observation = null;
     private volatile long observationTime = 0;
-    private volatile boolean observationRestarting = false;
 
     public PhilipsAirAPIConnectionCoap(PhilipsAirConfiguration config) {
         super(config);
@@ -133,27 +132,14 @@ public class PhilipsAirAPIConnectionCoap extends PhilipsAirAPIConnection {
     private synchronized @Nullable JsonElement getObservation() throws PhilipsAirAPIException {
         try {
             if (observation == null || System.currentTimeMillis() - observationTime >= OBSERVATION_TIMEOUT_MS) {
-                if (!observationRestarting) {
-                    try {
-                        logger.debug("Restarting observation as cached data is stale");
-                        observationRestarting = true;
-                        reset();
-                        sync();
-                        observe();
-                        logger.debug("Waiting for observation");
-                        wait(CONNECTION_TIMEOUT_MS);
-                        if (observation == null) {
-                            throw new PhilipsAirAPIException("Device did not send respond within time limits");
-                        }
-                    } finally {
-                        observationRestarting = false;
-                    }
-                } else {
-                    logger.debug("Waiting for observation");
-                    wait(CONNECTION_TIMEOUT_MS);
-                    if (observation == null) {
-                        throw new PhilipsAirAPIException("Device did not send respond within time limits");
-                    }
+                logger.debug("Restarting observation as cached data is stale");
+                reset();
+                sync();
+                observe();
+                logger.debug("Waiting for observation");
+                wait(CONNECTION_TIMEOUT_MS);
+                if (observation == null) {
+                    throw new PhilipsAirAPIException("Device did not send response within time limits");
                 }
             }
             return observation;
