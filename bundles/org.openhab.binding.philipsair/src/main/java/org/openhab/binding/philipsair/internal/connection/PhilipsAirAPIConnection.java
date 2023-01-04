@@ -38,6 +38,9 @@ public abstract class PhilipsAirAPIConnection {
         this.config = config;
     }
 
+    public void dispose() {
+    }
+
     public @Nullable abstract PhilipsAirPurifierDataDTO getAirPurifierStatus(String host)
             throws JsonSyntaxException, PhilipsAirAPIException;
 

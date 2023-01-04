@@ -55,8 +55,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.openhab.binding.philipsair.internal.connection.PhilipsAirAPIConnection;
+import org.openhab.binding.philipsair.internal.connection.PhilipsAirAPIConnectionCoap;
 import org.openhab.binding.philipsair.internal.connection.PhilipsAirAPIException;
-import org.openhab.binding.philipsair.internal.connection.PhilipsAirCoapAPIConnection;
 import org.openhab.binding.philipsair.internal.connection.PhilipsAirHttpAPIConnection;
 import org.openhab.binding.philipsair.internal.model.PhilipsAirPurifierDataDTO;
 import org.openhab.binding.philipsair.internal.model.PhilipsAirPurifierDeviceDTO;
@@ -118,11 +118,15 @@ public class PhilipsAirHandler extends BaseThingHandler {
             logger.debug("Sending {} as {}", channelUID.getId(), command.toString());
             PhilipsAirPurifierWritableDataDTO commandData = prepareCommandData(channelUID.getIdWithoutGroup(), command);
             try {
-                currentData = connection.sendCommand(channelUID.getIdWithoutGroup(), commandData);
+                PhilipsAirPurifierDataDTO resultData = connection.sendCommand(channelUID.getIdWithoutGroup(),
+                        commandData);
+                if (resultData != null) {
+                    currentData = resultData;
+                    updateChannels();
+                }
             } catch (PhilipsAirAPIException e) {
                 logger.debug("An exception occured", e);
             }
-            updateChannels();
         }
     }
 
@@ -191,7 +195,7 @@ public class PhilipsAirHandler extends BaseThingHandler {
                 }
                 break;
             case HUMIDITY_SETPOINT:
-                if (quantityCommand != null) {                   
+                if (quantityCommand != null) {
                     data.setHumiditySetpoint(quantityCommand.intValue());
                 }
                 break;
@@ -233,7 +237,7 @@ public class PhilipsAirHandler extends BaseThingHandler {
     private void getConnection(PhilipsAirConfiguration config) {
         if (SUPPORTED_COAP_THING_TYPES_UIDS.contains(getThing().getThingTypeUID())) {
             logger.debug("Starting Coap based connectivity");
-            connection = new PhilipsAirCoapAPIConnection(config);
+            connection = new PhilipsAirAPIConnectionCoap(config);
         } else {
             logger.debug("Starting HTTP based connectivity");
             connection = new PhilipsAirHttpAPIConnection(config, httpClient);
@@ -244,6 +248,10 @@ public class PhilipsAirHandler extends BaseThingHandler {
     public void dispose() {
         if (refreshJob != null) {
             refreshJob.cancel(true);
+        }
+
+        if (connection != null) {
+            connection.dispose();
         }
 
         super.dispose();

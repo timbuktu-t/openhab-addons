@@ -14,6 +14,7 @@ package org.openhab.binding.philipsair.internal.connection;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -41,7 +42,7 @@ import org.slf4j.Logger;
 public class PhilipsAirCoapCipher {
     private static final String SHARED_SECRET = "JiangPan";
 
-    public static String decryptMsg(@Nullable String responseText, Logger logger) {
+    public static String decryptMsg(@Nullable String responseText, Logger logger) throws PhilipsAirAPIException {
         if (responseText == null || responseText.isBlank()) {
             return "";
         }
@@ -66,18 +67,19 @@ public class PhilipsAirCoapCipher {
                 logger.trace("Decrypted: {}", decryptedMsg);
             }
             return decryptedMsg;
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
-                | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+        } catch (GeneralSecurityException e) {
             logger.trace("Error decoding message: {}", e.getMessage(), e);
+            throw new PhilipsAirAPIException(e.getLocalizedMessage(), e);
         }
-        return "Could not decrypt";
     }
 
-    public @Nullable static String encryptedMsg(String commandText, long counter, Logger logger) {
-        return encryptedMsg(commandText, String.format("%08X", counter), logger);
+    public @Nullable static String encryptedMsg(String commandText, long counter, Logger logger)
+            throws PhilipsAirAPIException {
+        return encryptedMsg(commandText, String.format("%08X", (int) (counter & 0xFFFFFFFF)), logger);
     }
 
-    public @Nullable static String encryptedMsg(String commandText, String sequence, Logger logger) {
+    public @Nullable static String encryptedMsg(String commandText, String sequence, Logger logger)
+            throws PhilipsAirAPIException {
         try {
             String keyAndIv = toMD5(SHARED_SECRET + sequence);
             String secret = keyAndIv.substring(0, keyAndIv.length() / 2);
@@ -93,12 +95,10 @@ public class PhilipsAirCoapCipher {
                 logger.trace("Encypted message: {}", encrypedMessage);
             }
             return encrypedMessage;
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
-                | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException
-                | UnsupportedEncodingException e) {
-            logger.trace("Error decoding message: {}", e.getMessage(), e);
+        } catch (GeneralSecurityException | UnsupportedEncodingException e) {
+            logger.trace("Error encoding message: {}", e.getMessage(), e);
+            throw new PhilipsAirAPIException(e.getLocalizedMessage(), e);
         }
-        return null;
     }
 
     private static String toSHA(String originalString) throws NoSuchAlgorithmException {
