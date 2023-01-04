@@ -12,8 +12,36 @@
  */
 package org.openhab.binding.philipsair.internal;
 
-import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.*;
-import static org.openhab.core.thing.Thing.*;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.AIR_QUALITY_NOTIFICATION_THRESHOLD;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.ALLERGEN_INDEX;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.AUTO_TIMEOFF;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.BUTTONS_LIGHT;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.CARBON_FILTER;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.CHILD_LOCK;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.DENSITY_UNIT;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.DISPLAYED_INDEX;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.ERROR_CODE;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.FAN_MODE;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.FUNCTION;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.HEPA_FILTER;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.HUMIDITY;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.HUMIDITY_SETPOINT;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.HUMIDITY_UNIT;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.LED_LIGHT_LEVEL;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.MODE;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.PM25;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.POWER;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.PRE_FILTER;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.SOFTWARE_VERSION;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.SUPPORTED_COAP_THING_TYPES_UIDS;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.TEMPERATURE;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.TEMPERATURE_UNIT;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.TIMER_COUNTDOWN;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.WATER_LEVEL;
+import static org.openhab.binding.philipsair.internal.PhilipsAirBindingConstants.WICKS_FILTER;
+import static org.openhab.core.thing.Thing.PROPERTY_FIRMWARE_VERSION;
+import static org.openhab.core.thing.Thing.PROPERTY_MODEL_ID;
+import static org.openhab.core.thing.Thing.PROPERTY_VENDOR;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -101,12 +129,15 @@ public class PhilipsAirHandler extends BaseThingHandler {
     public PhilipsAirPurifierWritableDataDTO prepareCommandData(String parameter, Command command) {
         OnOffType onOffCommand = null;
         DecimalType decimalCommand = null;
+        QuantityType<?> quantityCommand = null;
         String stringCommand = null;
 
         if (command instanceof OnOffType) {
             onOffCommand = (OnOffType) command;
         } else if (command instanceof DecimalType) {
             decimalCommand = (DecimalType) command;
+        } else if (command instanceof QuantityType<?>) {
+            quantityCommand = (QuantityType<?>) command;
         } else if (command instanceof StringType) {
             stringCommand = command.toString();
         }
@@ -160,8 +191,8 @@ public class PhilipsAirHandler extends BaseThingHandler {
                 }
                 break;
             case HUMIDITY_SETPOINT:
-                if (decimalCommand != null) {
-                    data.setHumiditySetpoint(decimalCommand.intValue());
+                if (quantityCommand != null) {                   
+                    data.setHumiditySetpoint(quantityCommand.intValue());
                 }
                 break;
             case FUNCTION:

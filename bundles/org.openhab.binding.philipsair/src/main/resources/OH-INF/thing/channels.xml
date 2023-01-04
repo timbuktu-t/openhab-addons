@@ -86,7 +86,7 @@
 		<item-type>Number:Density</item-type>
 		<label>PM2.5</label>
 		<description>PM 2.5 particles pollution level</description>
-		<state readOnly="true" pattern="%d" min="0" max="5000"/>
+		<state readOnly="true" pattern="%d"/>
 	</channel-type>
 	<channel-type id="iaql">
 		<item-type>Number</item-type>
@@ -106,10 +106,14 @@
 
 		<state readOnly="true" pattern="%s">
 			<options>
-				<option value="0">No error</option>
-				<option value="49408">No water</option>
-				<option value="32768">Water tank open</option>
-				<option value="49155">Clean pre-filter</option>
+				<option value="0">Normal</option>
+				<option value="32768">Open</option>
+				<option value="49155">Cleaning</option>
+				<option value="49236">Exchange</option>
+				<option value="49408">Empty</option>
+				<option value="49411">Cleaning/Empty</option>
+				<option value="49492">Exchange/Empty</option>
+				<option value="49495">Cleaning/Exchange/Empty</option>
 			</options>
 		</state>
 	</channel-type>
@@ -143,7 +147,7 @@
 		<label>Humidity</label>
 		<description>Current humidity</description>
 		<category>Humidity</category>
-		<state readOnly="true" pattern="%.1f %unit%" min="0" max="100"/>
+		<state readOnly="true" pattern="%.1f %unit%"/>
 	</channel-type>
 	<channel-type id="rhset">
 		<item-type>Number:Dimensionless</item-type>
