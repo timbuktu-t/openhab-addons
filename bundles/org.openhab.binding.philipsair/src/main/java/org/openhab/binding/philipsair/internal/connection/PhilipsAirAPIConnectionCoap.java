@@ -58,10 +58,10 @@ public class PhilipsAirAPIConnectionCoap extends PhilipsAirAPIConnection {
     private static final String STATUS_PATH = "sys/dev/status";
     // port to use for communication
     private static final int PORT = 5683;
-    // timeout for observations before resynchronizing
-    private static final long OBSERVATION_TIMEOUT_MS = 900000;
-    // timeout for synchronous calls and first observation before failing the connection
+    // timeout for synchronous calls
     private static final long CONNECTION_TIMEOUT_MS = 5000;
+    // timeout for observations before resynchronizing
+    private static final long OBSERVATION_TIMEOUT_MS = 300000;
 
     private final Gson gson = new Gson();
     private final CoapClient syncClient;
@@ -116,7 +116,7 @@ public class PhilipsAirAPIConnectionCoap extends PhilipsAirAPIConnection {
             throws JsonSyntaxException, PhilipsAirAPIException {
         @Nullable
         PhilipsAirPurifierDeviceDTO dto = gson.fromJson(getObservation(), PhilipsAirPurifierDeviceDTO.class);
-        if (dto.getDeviceId() != null && !dto.getDeviceId().equals(config.getDeviceUUID())) {
+        if (dto != null && dto.getDeviceId() != null && !dto.getDeviceId().equals(config.getDeviceUUID())) {
             logger.debug("Setting deviceUUID to {}", dto.getDeviceId());
             config.setDeviceUUID(dto.getDeviceId());
         }
@@ -130,22 +130,13 @@ public class PhilipsAirAPIConnectionCoap extends PhilipsAirAPIConnection {
     }
 
     private synchronized @Nullable JsonElement getObservation() throws PhilipsAirAPIException {
-        try {
-            if (observation == null || System.currentTimeMillis() - observationTime >= OBSERVATION_TIMEOUT_MS) {
-                logger.debug("Restarting observation as cached data is stale");
-                reset();
-                sync();
-                observe();
-                logger.debug("Waiting for observation");
-                wait(CONNECTION_TIMEOUT_MS);
-                if (observation == null) {
-                    throw new PhilipsAirAPIException("Device did not send response within time limits");
-                }
-            }
-            return observation;
-        } catch (InterruptedException e) {
-            throw new PhilipsAirAPIException("Interrupted while waiting for response from device", e);
+        if (observation == null || System.currentTimeMillis() - observationTime >= OBSERVATION_TIMEOUT_MS) {
+            logger.debug("Restarting observation as cached data is stale");
+            reset();
+            sync();
+            observe();
         }
+        return observation;
     }
 
     private void reset() {
@@ -192,7 +183,7 @@ public class PhilipsAirAPIConnectionCoap extends PhilipsAirAPIConnection {
 
             @Override
             public void onError() {
-                logger.warn("Connector reported communication error");
+                logger.debug("Connector reported communication error");
             }
         });
     }
@@ -211,11 +202,9 @@ public class PhilipsAirAPIConnectionCoap extends PhilipsAirAPIConnection {
         ++lastClientId;
         final String decrypted = PhilipsAirCoapCipher.decryptMsg(message, logger);
         logger.trace("Received observation {}", decrypted);
-        // unwrap content and notify receivers
         observationTime = System.currentTimeMillis();
         observation = JsonParser.parseString(decrypted).getAsJsonObject().getAsJsonObject("state")
                 .getAsJsonObject("reported");
-        notifyAll();
     }
 
     @Override
