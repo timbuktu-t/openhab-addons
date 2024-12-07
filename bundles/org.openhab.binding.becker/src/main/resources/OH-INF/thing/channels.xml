@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="becker"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<channel-type id="window">
+		<item-type>Rollershutter</item-type>
+		<label>Control</label>
+		<description>Controls device movement using up, down and stop.</description>
+		<category>Window</category>
+		<config-description/>
+	</channel-type>
+
+	<channel-type id="blinds">
+		<item-type>Rollershutter</item-type>
+		<label>Control</label>
+		<description>Controls device movement using up, down and stop.</description>
+		<category>Blinds</category>
+		<config-description/>
+	</channel-type>
+
+</thing:thing-descriptions>
